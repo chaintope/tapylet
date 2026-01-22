@@ -1,6 +1,6 @@
-import React from "react"
+import React, { useState } from "react"
 import { Button, Card, CardContent } from "../components/ui"
-import { AddressDisplay } from "../components/wallet"
+import { AddressDisplay, ReceiveModal } from "../components/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
 import type { AppScreen } from "../types/wallet"
 
@@ -13,6 +13,8 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   address,
   onNavigate,
 }) => {
+  const [showReceiveModal, setShowReceiveModal] = useState(false)
+
   const handleLock = () => {
     walletStorage.lock()
     onNavigate("unlock")
@@ -101,7 +103,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             </svg>
             Send
           </Button>
-          <Button variant="outline" disabled>
+          <Button variant="outline" onClick={() => setShowReceiveModal(true)}>
             <svg
               className="w-4 h-4 mr-2"
               fill="none"
@@ -121,7 +123,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         {/* Coming Soon */}
         <div className="mt-6 p-4 bg-slate-50 rounded-lg text-center">
           <p className="text-sm text-slate-500">
-            Send and receive features coming soon!
+            Send feature coming soon!
           </p>
         </div>
       </div>
@@ -132,6 +134,13 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
           Connected to Tapyrus Testnet
         </p>
       </div>
+
+      {/* Receive Modal */}
+      <ReceiveModal
+        address={address}
+        isOpen={showReceiveModal}
+        onClose={() => setShowReceiveModal(false)}
+      />
     </div>
   )
 }
