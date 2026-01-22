@@ -1,7 +1,15 @@
 import * as tapyrus from "tapyrusjs-lib"
 import { mnemonicToSeed } from "./mnemonic"
 
-const DERIVATION_PATH = "m/44'/1'/0'/0/0"
+// Re-export NetworkId from tapyrusjs-lib
+export const NetworkId = tapyrus.NetworkId
+
+// Default network ID for this wallet
+const DEFAULT_NETWORK_ID = tapyrus.NetworkId.TESTNET
+
+const getDerivationPath = (networkId: number, index = 0): string => {
+  return `m/44'/${networkId}'/0'/0/${index}`
+}
 
 export interface HDWalletKeys {
   privateKey: Uint8Array
@@ -9,11 +17,16 @@ export interface HDWalletKeys {
   wif: string
 }
 
-export const createHDWallet = async (mnemonic: string): Promise<HDWalletKeys> => {
+export const createHDWallet = async (
+  mnemonic: string,
+  networkId: tapyrus.NetworkId = DEFAULT_NETWORK_ID,
+  index = 0
+): Promise<HDWalletKeys> => {
   const seed = await mnemonicToSeed(mnemonic)
   const network = tapyrus.networks.dev
+  const derivationPath = getDerivationPath(networkId, index)
   const root = tapyrus.bip32.fromSeed(seed, network)
-  const child = root.derivePath(DERIVATION_PATH)
+  const child = root.derivePath(derivationPath)
 
   if (!child.privateKey) {
     throw new Error("Failed to derive private key")
