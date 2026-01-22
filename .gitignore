@@ -12,6 +12,7 @@
 # misc
 .DS_Store
 *.pem
+.idea
 
 # debug
 npm-debug.log*
@@ -28,6 +29,7 @@ dist/
 
 # plasmo
 .plasmo
+.parcel-cache
 
 # typescript
-.tsbuildinfo
+*.tsbuildinfo
