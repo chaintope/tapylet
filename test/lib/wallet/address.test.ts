@@ -21,12 +21,12 @@ describe('address', () => {
       expect(address1).toBe(address2)
     })
 
-    it('should generate address starting with m or n for testnet', async () => {
+    it('should generate address starting with 1 for prod network', async () => {
       const keys = await createHDWallet(testMnemonic)
       const address = generateAddress(keys.publicKey)
 
-      // Testnet P2PKH addresses start with 'm' or 'n'
-      expect(['m', 'n']).toContain(address[0])
+      // Prod P2PKH addresses start with '1'
+      expect(address[0]).toBe('1')
     })
 
     it('should throw error for invalid public key', () => {

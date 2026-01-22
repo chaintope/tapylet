@@ -23,7 +23,7 @@ export const createHDWallet = async (
   index = 0
 ): Promise<HDWalletKeys> => {
   const seed = await mnemonicToSeed(mnemonic)
-  const network = tapyrus.networks.dev
+  const network = tapyrus.networks.prod
   const derivationPath = getDerivationPath(networkId, index)
   const root = tapyrus.bip32.fromSeed(seed, network)
   const child = root.derivePath(derivationPath)
@@ -40,7 +40,7 @@ export const createHDWallet = async (
 }
 
 export const getPublicKeyFromWIF = (wif: string): Uint8Array => {
-  const network = tapyrus.networks.dev
+  const network = tapyrus.networks.prod
   const keyPair = tapyrus.ECPair.fromWIF(wif, network)
   return keyPair.publicKey
 }

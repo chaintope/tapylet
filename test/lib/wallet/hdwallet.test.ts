@@ -47,10 +47,10 @@ describe('hdwallet', () => {
         .not.toBe(Buffer.from(keys1.privateKey).toString('hex'))
     })
 
-    it('should generate WIF starting with c for testnet', async () => {
+    it('should generate WIF starting with K or L for prod network', async () => {
       const keys = await createHDWallet(testMnemonic)
-      // Testnet WIF starts with 'c' (compressed) or '9' (uncompressed)
-      expect(keys.wif[0]).toBe('c')
+      // Prod WIF (compressed) starts with 'K' or 'L'
+      expect(['K', 'L']).toContain(keys.wif[0])
     })
   })
 

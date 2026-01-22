@@ -1,7 +1,7 @@
 import * as tapyrus from "tapyrusjs-lib"
 
 export const generateAddress = (publicKey: Uint8Array): string => {
-  const network = tapyrus.networks.dev
+  const network = tapyrus.networks.prod
   const payment = tapyrus.payments.p2pkh({
     pubkey: Buffer.from(publicKey),
     network,
@@ -16,7 +16,7 @@ export const generateAddress = (publicKey: Uint8Array): string => {
 
 export const validateAddress = (address: string): boolean => {
   try {
-    const network = tapyrus.networks.dev
+    const network = tapyrus.networks.prod
     tapyrus.address.toOutputScript(address, network)
     return true
   } catch {
