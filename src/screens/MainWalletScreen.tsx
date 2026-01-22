@@ -1,7 +1,8 @@
-import React, { useState } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { Button, Card, CardContent } from "../components/ui"
 import { AddressDisplay, ReceiveModal } from "../components/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
+import { getBalance, formatTpc } from "../lib/api"
 import type { AppScreen } from "../types/wallet"
 
 interface MainWalletScreenProps {
@@ -14,6 +15,28 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   onNavigate,
 }) => {
   const [showReceiveModal, setShowReceiveModal] = useState(false)
+  const [balance, setBalance] = useState<number | null>(null)
+  const [isLoadingBalance, setIsLoadingBalance] = useState(true)
+  const [balanceError, setBalanceError] = useState<string | null>(null)
+
+  const fetchBalance = useCallback(async () => {
+    try {
+      setBalanceError(null)
+      const bal = await getBalance(address)
+      setBalance(bal)
+    } catch (err) {
+      console.error("Failed to fetch balance:", err)
+      setBalanceError("Failed to load")
+    } finally {
+      setIsLoadingBalance(false)
+    }
+  }, [address])
+
+  useEffect(() => {
+    fetchBalance()
+    const interval = setInterval(fetchBalance, 30000) // Refresh every 30 seconds
+    return () => clearInterval(interval)
+  }, [fetchBalance])
 
   const handleLock = () => {
     walletStorage.lock()
@@ -69,7 +92,15 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         {/* Balance */}
         <div className="text-center">
           <p className="text-white/60 text-sm mb-1">Total Balance</p>
-          <p className="text-3xl font-bold">0 TPC</p>
+          <p className="text-3xl font-bold">
+            {isLoadingBalance ? (
+              <span className="animate-pulse">...</span>
+            ) : balanceError ? (
+              <span className="text-lg">{balanceError}</span>
+            ) : (
+              `${formatTpc(balance ?? 0)} TPC`
+            )}
+          </p>
           <p className="text-white/60 text-sm mt-1">Tapyrus Testnet</p>
         </div>
       </div>
