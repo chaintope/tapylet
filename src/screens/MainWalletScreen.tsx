@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { Button, Card, CardContent } from "../components/ui"
-import { AddressDisplay, ReceiveModal } from "../components/wallet"
+import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions } from "../components/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
-import { getBalance, formatTpc } from "../lib/api"
+import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
+import { getBalance, formatTpc, getTransactionInfo } from "../lib/api"
 import type { AppScreen } from "../types/wallet"
 
 interface MainWalletScreenProps {
@@ -15,9 +16,39 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   onNavigate,
 }) => {
   const [showReceiveModal, setShowReceiveModal] = useState(false)
+  const [showSendModal, setShowSendModal] = useState(false)
+  const [showPendingModal, setShowPendingModal] = useState(false)
   const [balance, setBalance] = useState<number | null>(null)
   const [isLoadingBalance, setIsLoadingBalance] = useState(true)
   const [balanceError, setBalanceError] = useState<string | null>(null)
+  const [pendingTxs, setPendingTxs] = useState<PendingTransaction[]>([])
+
+  const fetchPendingTxs = useCallback(async () => {
+    const txs = await pendingTxStore.getAll()
+    setPendingTxs(txs)
+  }, [])
+
+  const checkPendingTxs = useCallback(async () => {
+    const txs = await pendingTxStore.getAll()
+    let hasConfirmed = false
+
+    for (const tx of txs) {
+      try {
+        const info = await getTransactionInfo(tx.txid)
+        if (info.status.confirmed) {
+          await pendingTxStore.remove(tx.txid)
+          hasConfirmed = true
+        }
+      } catch {
+        // Transaction not found or error, keep in pending
+      }
+    }
+
+    if (hasConfirmed) {
+      fetchBalance()
+    }
+    fetchPendingTxs()
+  }, [fetchPendingTxs])
 
   const fetchBalance = useCallback(async () => {
     try {
@@ -34,9 +65,14 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
 
   useEffect(() => {
     fetchBalance()
-    const interval = setInterval(fetchBalance, 30000) // Refresh every 30 seconds
-    return () => clearInterval(interval)
-  }, [fetchBalance])
+    fetchPendingTxs()
+    const balanceInterval = setInterval(fetchBalance, 30000) // Refresh every 30 seconds
+    const pendingInterval = setInterval(checkPendingTxs, 10000) // Check pending every 10 seconds
+    return () => {
+      clearInterval(balanceInterval)
+      clearInterval(pendingInterval)
+    }
+  }, [fetchBalance, fetchPendingTxs, checkPendingTxs])
 
   const handleLock = () => {
     walletStorage.lock()
@@ -119,7 +155,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-3">
-          <Button variant="outline" disabled>
+          <Button variant="outline" onClick={() => setShowSendModal(true)}>
             <svg
               className="w-4 h-4 mr-2"
               fill="none"
@@ -151,12 +187,31 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
           </Button>
         </div>
 
-        {/* Coming Soon */}
-        <div className="mt-6 p-4 bg-slate-50 rounded-lg text-center">
-          <p className="text-sm text-slate-500">
-            Send feature coming soon!
-          </p>
-        </div>
+        {/* Pending Transactions Banner */}
+        {pendingTxs.length > 0 && (
+          <button
+            onClick={() => setShowPendingModal(true)}
+            className="w-full mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg flex items-center justify-between hover:bg-orange-100 transition-colors">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-orange-700">
+                {pendingTxs.length} pending transaction{pendingTxs.length > 1 ? "s" : ""}
+              </span>
+            </div>
+            <svg
+              className="w-4 h-4 text-orange-500"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        )}
       </div>
 
       {/* Footer */}
@@ -171,6 +226,30 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         address={address}
         isOpen={showReceiveModal}
         onClose={() => setShowReceiveModal(false)}
+      />
+
+      {/* Send Modal */}
+      <SendModal
+        address={address}
+        balance={balance ?? 0}
+        isOpen={showSendModal}
+        onClose={() => setShowSendModal(false)}
+        onSuccess={async (txid: string, amount: number, toAddress: string) => {
+          await pendingTxStore.add({
+            txid,
+            amount,
+            toAddress,
+            timestamp: Date.now(),
+          })
+          fetchPendingTxs()
+        }}
+      />
+
+      {/* Pending Transactions Modal */}
+      <PendingTransactions
+        transactions={pendingTxs}
+        isOpen={showPendingModal}
+        onClose={() => setShowPendingModal(false)}
       />
     </div>
   )

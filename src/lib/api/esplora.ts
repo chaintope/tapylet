@@ -1,4 +1,5 @@
-const EXPLORER_API_URL = "https://testnet-explorer.tapyrus.dev.chaintope.com/api"
+const EXPLORER_API_URL = process.env.PLASMO_PUBLIC_EXPLORER_API_URL
+  ?? "https://testnet-explorer.tapyrus.dev.chaintope.com/api"
 
 // Color ID for native TPC (uncolored coins)
 const TPC_COLOR_ID = "000000000000000000000000000000000000000000000000000000000000000000"
@@ -59,4 +60,47 @@ export const formatTpc = (tapyrus: number): string => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 8,
   })
+}
+
+export const parseTpc = (tpcString: string): number => {
+  const tpc = parseFloat(tpcString)
+  if (isNaN(tpc)) {
+    throw new Error("Invalid TPC amount")
+  }
+  return Math.round(tpc * 100000000)
+}
+
+export const broadcastTransaction = async (txHex: string): Promise<string> => {
+  const response = await fetch(`${EXPLORER_API_URL}/tx`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain",
+    },
+    body: txHex,
+  })
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to broadcast transaction: ${errorText}`)
+  }
+  return response.text()
+}
+
+export interface TransactionStatus {
+  confirmed: boolean
+  block_height?: number
+  block_hash?: string
+  block_time?: number
+}
+
+export interface TransactionInfo {
+  txid: string
+  status: TransactionStatus
+}
+
+export const getTransactionInfo = async (txid: string): Promise<TransactionInfo> => {
+  const response = await fetch(`${EXPLORER_API_URL}/tx/${txid}`)
+  if (!response.ok) {
+    throw new Error(`Failed to fetch transaction: ${response.status}`)
+  }
+  return response.json()
 }

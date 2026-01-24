@@ -1,3 +1,5 @@
 export { MnemonicGrid } from "./MnemonicGrid"
 export { AddressDisplay } from "./AddressDisplay"
 export { ReceiveModal } from "./ReceiveModal"
+export { SendModal } from "./SendModal"
+export { PendingTransactions } from "./PendingTransactions"
