@@ -1,5 +1,6 @@
 import React, { useState } from "react"
-import { Button, Input } from "../components/ui"
+import { useTranslation } from "react-i18next"
+import { Button } from "../components/ui"
 import { validateMnemonic, normalizeMnemonic } from "../lib/wallet"
 import type { AppScreen } from "../types/wallet"
 
@@ -12,6 +13,7 @@ export const RestoreWalletScreen: React.FC<RestoreWalletScreenProps> = ({
   onNavigate,
   onMnemonicEntered,
 }) => {
+  const { t } = useTranslation()
   const [mnemonic, setMnemonic] = useState("")
   const [error, setError] = useState<string | null>(null)
 
@@ -24,12 +26,12 @@ export const RestoreWalletScreen: React.FC<RestoreWalletScreenProps> = ({
     const normalized = normalizeMnemonic(mnemonic)
 
     if (!isValidLength) {
-      setError("Please enter 12 or 24 words")
+      setError(t("restoreWallet.errors.invalidMnemonic"))
       return
     }
 
     if (!validateMnemonic(normalized)) {
-      setError("Invalid recovery phrase. Please check and try again.")
+      setError(t("restoreWallet.errors.invalidMnemonic"))
       return
     }
 
@@ -42,10 +44,10 @@ export const RestoreWalletScreen: React.FC<RestoreWalletScreenProps> = ({
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-slate-800 mb-2">
-          Restore Wallet
+          {t("restoreWallet.title")}
         </h1>
         <p className="text-sm text-slate-500">
-          Enter your 12 or 24 word recovery phrase to restore your wallet.
+          {t("restoreWallet.subtitle")}
         </p>
       </div>
 
@@ -58,14 +60,14 @@ export const RestoreWalletScreen: React.FC<RestoreWalletScreenProps> = ({
               setMnemonic(e.target.value)
               setError(null)
             }}
-            placeholder="Enter your recovery phrase..."
+            placeholder={t("restoreWallet.placeholder")}
             className="w-full h-40 px-4 py-3 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none text-sm font-mono"
           />
           <span
             className={`absolute bottom-3 right-3 text-xs ${
               isValidLength ? "text-green-600" : "text-slate-400"
             }`}>
-            {wordCount} / 12 or 24 words
+            {wordCount} / 12
           </span>
         </div>
 
@@ -75,16 +77,6 @@ export const RestoreWalletScreen: React.FC<RestoreWalletScreenProps> = ({
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
-
-        {/* Tips */}
-        <div className="mt-4 p-4 bg-slate-50 rounded-lg">
-          <p className="text-sm font-medium text-slate-700 mb-2">Tips:</p>
-          <ul className="text-sm text-slate-500 space-y-1 list-disc list-inside">
-            <li>Separate words with spaces</li>
-            <li>Words are case-insensitive</li>
-            <li>Make sure there are no extra spaces</li>
-          </ul>
-        </div>
       </div>
 
       {/* Actions */}
@@ -93,13 +85,13 @@ export const RestoreWalletScreen: React.FC<RestoreWalletScreenProps> = ({
           fullWidth
           disabled={!isValidLength}
           onClick={handleRestore}>
-          Continue
+          {t("restoreWallet.restore")}
         </Button>
         <Button
           variant="secondary"
           fullWidth
           onClick={() => onNavigate("welcome")}>
-          Back
+          {t("common.back")}
         </Button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
-import { Button, Loading } from "../components/ui"
+import { useTranslation } from "react-i18next"
+import { Loading } from "../components/ui"
 import { generateMnemonic } from "../lib/wallet"
 import type { AppScreen } from "../types/wallet"
 
@@ -12,6 +13,7 @@ export const CreateWalletScreen: React.FC<CreateWalletScreenProps> = ({
   onNavigate,
   onMnemonicGenerated,
 }) => {
+  const { t } = useTranslation()
   const [isGenerating, setIsGenerating] = useState(true)
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export const CreateWalletScreen: React.FC<CreateWalletScreenProps> = ({
   if (isGenerating) {
     return (
       <div className="flex flex-col h-full items-center justify-center">
-        <Loading size="lg" text="Generating secure wallet..." />
+        <Loading size="lg" text={t("createWallet.generating")} />
       </div>
     )
   }

@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../components/ui"
 import { MnemonicGrid } from "../components/wallet"
 import { mnemonicToWords } from "../lib/wallet"
@@ -13,6 +14,7 @@ export const MnemonicDisplayScreen: React.FC<MnemonicDisplayScreenProps> = ({
   mnemonic,
   onNavigate,
 }) => {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
   const words = mnemonicToWords(mnemonic)
@@ -36,11 +38,10 @@ export const MnemonicDisplayScreen: React.FC<MnemonicDisplayScreenProps> = ({
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-slate-800 mb-2">
-          Secret Recovery Phrase
+          {t("mnemonic.title")}
         </h1>
         <p className="text-sm text-slate-500">
-          Write down these 12 words in order and keep them in a safe place.
-          Never share them with anyone.
+          {t("mnemonic.subtitle")}
         </p>
       </div>
 
@@ -60,7 +61,7 @@ export const MnemonicDisplayScreen: React.FC<MnemonicDisplayScreenProps> = ({
             />
           </svg>
           <p className="text-sm text-amber-800">
-            If you lose this phrase, you will lose access to your wallet permanently.
+            {t("mnemonic.warning")}
           </p>
         </div>
       </div>
@@ -78,14 +79,14 @@ export const MnemonicDisplayScreen: React.FC<MnemonicDisplayScreenProps> = ({
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              Copied!
+              {t("common.copied")}
             </>
           ) : (
             <>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
-              Copy to clipboard
+              {t("common.copy")}
             </>
           )}
         </button>
@@ -100,7 +101,7 @@ export const MnemonicDisplayScreen: React.FC<MnemonicDisplayScreenProps> = ({
           className="mt-1 w-4 h-4 text-primary-600 border-slate-300 rounded focus:ring-primary-500"
         />
         <span className="text-sm text-slate-600">
-          I have written down my recovery phrase and stored it securely.
+          {t("mnemonic.continue")}
         </span>
       </label>
 
@@ -110,13 +111,13 @@ export const MnemonicDisplayScreen: React.FC<MnemonicDisplayScreenProps> = ({
           fullWidth
           disabled={!confirmed}
           onClick={() => onNavigate("mnemonic-confirm")}>
-          Continue
+          {t("common.continue")}
         </Button>
         <Button
           variant="secondary"
           fullWidth
           onClick={() => onNavigate("welcome")}>
-          Back
+          {t("common.back")}
         </Button>
       </div>
     </div>

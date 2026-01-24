@@ -1,0 +1,109 @@
+{
+  "common": {
+    "cancel": "キャンセル",
+    "close": "閉じる",
+    "back": "戻る",
+    "done": "完了",
+    "continue": "続ける",
+    "send": "送金",
+    "receive": "受取",
+    "tryAgain": "再試行",
+    "copy": "コピー",
+    "copied": "コピーしました"
+  },
+  "wallet": {
+    "title": "Tapylet",
+    "testnet": "テストネット",
+    "totalBalance": "残高",
+    "yourAddress": "あなたのアドレス",
+    "connectedTo": "Tapyrus テストネットに接続中",
+    "failedToLoad": "読み込み失敗"
+  },
+  "send": {
+    "title": "TPC を送金",
+    "sentTitle": "送金完了",
+    "recipientAddress": "送金先アドレス",
+    "enterAddress": "アドレスを入力",
+    "amount": "金額 (TPC)",
+    "available": "利用可能: {{amount}} TPC",
+    "confirmTransaction": "この取引を確認してください",
+    "to": "送金先",
+    "sending": "送金中...",
+    "transactionSent": "送金が完了しました",
+    "sentSuccessfully": "{{amount}} TPC を送金しました",
+    "transactionFailed": "送金に失敗しました",
+    "errors": {
+      "enterAddress": "送金先アドレスを入力してください",
+      "invalidAddress": "無効なアドレス形式です",
+      "enterAmount": "金額を入力してください",
+      "invalidAmount": "無効な金額です",
+      "amountGreaterThanZero": "金額は0より大きい必要があります",
+      "insufficientBalance": "残高が不足しています"
+    }
+  },
+  "receive": {
+    "title": "TPC を受け取る",
+    "yourAddress": "あなたのアドレス"
+  },
+  "pending": {
+    "title": "承認待ちの取引",
+    "noPending": "承認待ちの取引はありません",
+    "pending": "承認待ち",
+    "pendingCount": "{{count}} 件の承認待ち",
+    "pendingCount_plural": "{{count}} 件の承認待ち",
+    "to": "送金先: {{address}}",
+    "tx": "TX: {{txid}}"
+  },
+  "welcome": {
+    "title": "Tapylet へようこそ",
+    "subtitle": "Tapyrus ウォレット",
+    "createWallet": "新規ウォレット作成",
+    "restoreWallet": "ウォレットを復元"
+  },
+  "createWallet": {
+    "title": "ウォレット作成",
+    "generating": "安全なウォレットを生成中..."
+  },
+  "mnemonic": {
+    "title": "リカバリーフレーズ",
+    "subtitle": "この12個の単語を順番に書き留めてください。ウォレットの復元に必要です。",
+    "warning": "リカバリーフレーズは絶対に他人に教えないでください！",
+    "continue": "書き留めました"
+  },
+  "mnemonicConfirm": {
+    "title": "リカバリーフレーズの確認",
+    "subtitle": "単語を正しい順序で選択して、リカバリーフレーズを確認してください。",
+    "errors": {
+      "incorrectOrder": "順序が正しくありません。もう一度お試しください。"
+    }
+  },
+  "restoreWallet": {
+    "title": "ウォレットを復元",
+    "subtitle": "12個のリカバリーフレーズを入力してウォレットを復元します。",
+    "placeholder": "リカバリーフレーズを入力...",
+    "restore": "ウォレットを復元",
+    "errors": {
+      "invalidMnemonic": "無効なリカバリーフレーズです。確認してもう一度お試しください。"
+    }
+  },
+  "passwordSetup": {
+    "title": "パスワード設定",
+    "subtitle": "ウォレットを保護するパスワードを作成してください。",
+    "password": "パスワード",
+    "confirmPassword": "パスワード（確認）",
+    "setPassword": "パスワードを設定",
+    "errors": {
+      "minLength": "パスワードは8文字以上必要です",
+      "noMatch": "パスワードが一致しません"
+    }
+  },
+  "unlock": {
+    "title": "ウォレットのロック解除",
+    "subtitle": "パスワードを入力してウォレットのロックを解除してください。",
+    "password": "パスワード",
+    "unlock": "ロック解除",
+    "errors": {
+      "incorrectPassword": "パスワードが正しくありません"
+    }
+  }
+}

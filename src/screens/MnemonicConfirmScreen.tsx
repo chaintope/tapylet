@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../components/ui"
 import { MnemonicGrid } from "../components/wallet"
 import { mnemonicToWords } from "../lib/wallet"
@@ -13,6 +14,7 @@ export const MnemonicConfirmScreen: React.FC<MnemonicConfirmScreenProps> = ({
   mnemonic,
   onNavigate,
 }) => {
+  const { t } = useTranslation()
   const words = mnemonicToWords(mnemonic)
   const [inputValues, setInputValues] = useState<string[]>(
     Array(words.length).fill("")
@@ -46,7 +48,7 @@ export const MnemonicConfirmScreen: React.FC<MnemonicConfirmScreenProps> = ({
     if (allCorrect) {
       onNavigate("password-setup")
     } else {
-      setError("Some words are incorrect. Please check and try again.")
+      setError(t("mnemonicConfirm.errors.incorrectOrder"))
     }
   }
 
@@ -59,10 +61,10 @@ export const MnemonicConfirmScreen: React.FC<MnemonicConfirmScreenProps> = ({
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-slate-800 mb-2">
-          Confirm Recovery Phrase
+          {t("mnemonicConfirm.title")}
         </h1>
         <p className="text-sm text-slate-500">
-          Enter the missing words to confirm you have saved your recovery phrase.
+          {t("mnemonicConfirm.subtitle")}
         </p>
       </div>
 
@@ -87,13 +89,13 @@ export const MnemonicConfirmScreen: React.FC<MnemonicConfirmScreenProps> = ({
       {/* Actions */}
       <div className="space-y-3 mt-6">
         <Button fullWidth disabled={!isComplete} onClick={handleVerify}>
-          Verify
+          {t("common.continue")}
         </Button>
         <Button
           variant="secondary"
           fullWidth
           onClick={() => onNavigate("mnemonic-display")}>
-          Back
+          {t("common.back")}
         </Button>
       </div>
     </div>

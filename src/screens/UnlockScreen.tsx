@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button, Input } from "../components/ui"
 import { walletStorage } from "../lib/storage/secureStore"
 import type { AppScreen } from "../types/wallet"
@@ -12,6 +13,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
   onNavigate,
   onUnlock,
 }) => {
+  const { t } = useTranslation()
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isUnlocking, setIsUnlocking] = useState(false)
@@ -20,7 +22,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
     setError(null)
 
     if (!password) {
-      setError("Please enter your password")
+      setError(t("unlock.errors.incorrectPassword"))
       return
     }
 
@@ -30,7 +32,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
       const success = await walletStorage.unlock(password)
 
       if (!success) {
-        setError("Incorrect password")
+        setError(t("unlock.errors.incorrectPassword"))
         setIsUnlocking(false)
         return
       }
@@ -38,7 +40,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
       const wallet = await walletStorage.getWallet()
 
       if (!wallet) {
-        setError("Wallet data not found")
+        setError(t("unlock.errors.incorrectPassword"))
         setIsUnlocking(false)
         return
       }
@@ -47,7 +49,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
       onNavigate("main")
     } catch (err) {
       console.error("Failed to unlock:", err)
-      setError("Failed to unlock wallet")
+      setError(t("unlock.errors.incorrectPassword"))
     } finally {
       setIsUnlocking(false)
     }
@@ -77,9 +79,9 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">Welcome Back</h1>
+        <h1 className="text-2xl font-bold text-slate-800 mb-2">{t("unlock.title")}</h1>
         <p className="text-slate-500 text-center mb-8">
-          Enter your password to unlock
+          {t("unlock.subtitle")}
         </p>
 
         <div className="w-full space-y-4">
@@ -91,7 +93,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
               setError(null)
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Enter password"
+            placeholder={t("unlock.password")}
             showPasswordToggle
             autoFocus
           />
@@ -106,7 +108,7 @@ export const UnlockScreen: React.FC<UnlockScreenProps> = ({
 
       {/* Actions */}
       <Button fullWidth loading={isUnlocking} onClick={handleUnlock}>
-        Unlock
+        {t("unlock.unlock")}
       </Button>
     </div>
   )

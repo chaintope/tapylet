@@ -1,4 +1,5 @@
 import React from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "../components/ui"
 import type { AppScreen } from "../types/wallet"
 
@@ -7,6 +8,8 @@ interface WelcomeScreenProps {
 }
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
+  const { t } = useTranslation()
+
   return (
     <div className="flex flex-col h-full p-6">
       {/* Logo and Title */}
@@ -25,12 +28,12 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">Tapylet</h1>
+        <h1 className="text-2xl font-bold text-slate-800 mb-2">{t("wallet.title")}</h1>
         <p className="text-slate-500 text-center mb-2">
-          Tapyrus Wallet
+          {t("welcome.subtitle")}
         </p>
         <p className="text-xs text-slate-400 bg-slate-100 px-2 py-1 rounded">
-          Testnet
+          {t("wallet.testnet")}
         </p>
       </div>
 
@@ -39,13 +42,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
         <Button
           fullWidth
           onClick={() => onNavigate("create")}>
-          Create New Wallet
+          {t("welcome.createWallet")}
         </Button>
         <Button
           variant="outline"
           fullWidth
           onClick={() => onNavigate("restore")}>
-          Restore Existing Wallet
+          {t("welcome.restoreWallet")}
         </Button>
       </div>
 

@@ -1,4 +1,5 @@
 import React, { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
 import { validateAddress } from "../../lib/wallet"
 import { createAndSignTransaction } from "../../lib/wallet/transaction"
@@ -22,6 +23,7 @@ export const SendModal: React.FC<SendModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation()
   const [step, setStep] = useState<SendStep>("input")
   const [toAddress, setToAddress] = useState("")
   const [amount, setAmount] = useState("")
@@ -46,18 +48,18 @@ export const SendModal: React.FC<SendModalProps> = ({
 
     // Validate address
     if (!toAddress.trim()) {
-      setError("Please enter a recipient address")
+      setError(t("send.errors.enterAddress"))
       return
     }
 
     if (!validateAddress(toAddress.trim())) {
-      setError("Invalid address format")
+      setError(t("send.errors.invalidAddress"))
       return
     }
 
     // Validate amount
     if (!amount.trim()) {
-      setError("Please enter an amount")
+      setError(t("send.errors.enterAmount"))
       return
     }
 
@@ -65,17 +67,17 @@ export const SendModal: React.FC<SendModalProps> = ({
     try {
       amountTapyrus = parseTpc(amount)
     } catch {
-      setError("Invalid amount")
+      setError(t("send.errors.invalidAmount"))
       return
     }
 
     if (amountTapyrus <= 0) {
-      setError("Amount must be greater than 0")
+      setError(t("send.errors.amountGreaterThanZero"))
       return
     }
 
     if (amountTapyrus > balance) {
-      setError("Insufficient balance")
+      setError(t("send.errors.insufficientBalance"))
       return
     }
 
@@ -121,7 +123,7 @@ export const SendModal: React.FC<SendModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-800">
-            {step === "success" ? "Sent!" : "Send TPC"}
+            {step === "success" ? t("send.sentTitle") : t("send.title")}
           </h2>
           <button
             onClick={handleClose}
@@ -147,18 +149,18 @@ export const SendModal: React.FC<SendModalProps> = ({
             <div className="space-y-4 mb-6">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Recipient Address
+                  {t("send.recipientAddress")}
                 </label>
                 <Input
                   value={toAddress}
                   onChange={(e) => setToAddress(e.target.value)}
-                  placeholder="Enter address"
+                  placeholder={t("send.enterAddress")}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  Amount (TPC)
+                  {t("send.amount")}
                 </label>
                 <Input
                   type="number"
@@ -169,7 +171,7 @@ export const SendModal: React.FC<SendModalProps> = ({
                   placeholder="0.00000000"
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  Available: {formatTpc(balance)} TPC
+                  {t("send.available", { amount: formatTpc(balance) })}
                 </p>
               </div>
             </div>
@@ -180,10 +182,10 @@ export const SendModal: React.FC<SendModalProps> = ({
 
             <div className="flex gap-3">
               <Button variant="outline" fullWidth onClick={handleClose}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button fullWidth onClick={handleConfirm}>
-                Continue
+                {t("common.continue")}
               </Button>
             </div>
           </>
@@ -194,25 +196,25 @@ export const SendModal: React.FC<SendModalProps> = ({
           <>
             <div className="bg-slate-50 rounded-lg p-4 mb-6 space-y-3">
               <div>
-                <p className="text-xs text-slate-500">To</p>
+                <p className="text-xs text-slate-500">{t("send.to")}</p>
                 <p className="text-sm font-mono break-all">{toAddress}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Amount</p>
+                <p className="text-xs text-slate-500">{t("send.amount")}</p>
                 <p className="text-lg font-semibold">{amount} TPC</p>
               </div>
             </div>
 
             <p className="text-sm text-slate-600 mb-6 text-center">
-              Please confirm this transaction
+              {t("send.confirmTransaction")}
             </p>
 
             <div className="flex gap-3">
               <Button variant="outline" fullWidth onClick={() => setStep("input")}>
-                Back
+                {t("common.back")}
               </Button>
               <Button fullWidth onClick={handleSend}>
-                Send
+                {t("common.send")}
               </Button>
             </div>
           </>
@@ -222,7 +224,7 @@ export const SendModal: React.FC<SendModalProps> = ({
         {step === "sending" && (
           <div className="text-center py-8">
             <div className="animate-spin w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full mx-auto mb-4" />
-            <p className="text-slate-600">Sending transaction...</p>
+            <p className="text-slate-600">{t("send.sending")}</p>
           </div>
         )}
 
@@ -245,10 +247,10 @@ export const SendModal: React.FC<SendModalProps> = ({
                 </svg>
               </div>
               <p className="text-lg font-semibold text-slate-800 mb-2">
-                Transaction Sent!
+                {t("send.transactionSent")}
               </p>
               <p className="text-sm text-slate-500 mb-4">
-                {amount} TPC sent successfully
+                {t("send.sentSuccessfully", { amount })}
               </p>
               {txid && (
                 <p className="text-xs font-mono text-slate-400 break-all px-4">
@@ -258,7 +260,7 @@ export const SendModal: React.FC<SendModalProps> = ({
             </div>
 
             <Button fullWidth onClick={handleClose} className="mt-6">
-              Done
+              {t("common.done")}
             </Button>
           </>
         )}
@@ -282,17 +284,17 @@ export const SendModal: React.FC<SendModalProps> = ({
                 </svg>
               </div>
               <p className="text-lg font-semibold text-slate-800 mb-2">
-                Transaction Failed
+                {t("send.transactionFailed")}
               </p>
               <p className="text-sm text-red-500">{error}</p>
             </div>
 
             <div className="flex gap-3 mt-6">
               <Button variant="outline" fullWidth onClick={handleClose}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button fullWidth onClick={() => setStep("input")}>
-                Try Again
+                {t("common.tryAgain")}
               </Button>
             </div>
           </>

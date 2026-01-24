@@ -1,0 +1,109 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "close": "Close",
+    "back": "Back",
+    "done": "Done",
+    "continue": "Continue",
+    "send": "Send",
+    "receive": "Receive",
+    "tryAgain": "Try Again",
+    "copy": "Copy",
+    "copied": "Copied!"
+  },
+  "wallet": {
+    "title": "Tapylet",
+    "testnet": "Testnet",
+    "totalBalance": "Total Balance",
+    "yourAddress": "Your Address",
+    "connectedTo": "Connected to Tapyrus Testnet",
+    "failedToLoad": "Failed to load"
+  },
+  "send": {
+    "title": "Send TPC",
+    "sentTitle": "Sent!",
+    "recipientAddress": "Recipient Address",
+    "enterAddress": "Enter address",
+    "amount": "Amount (TPC)",
+    "available": "Available: {{amount}} TPC",
+    "confirmTransaction": "Please confirm this transaction",
+    "to": "To",
+    "sending": "Sending transaction...",
+    "transactionSent": "Transaction Sent!",
+    "sentSuccessfully": "{{amount}} TPC sent successfully",
+    "transactionFailed": "Transaction Failed",
+    "errors": {
+      "enterAddress": "Please enter a recipient address",
+      "invalidAddress": "Invalid address format",
+      "enterAmount": "Please enter an amount",
+      "invalidAmount": "Invalid amount",
+      "amountGreaterThanZero": "Amount must be greater than 0",
+      "insufficientBalance": "Insufficient balance"
+    }
+  },
+  "receive": {
+    "title": "Receive TPC",
+    "yourAddress": "Your Address"
+  },
+  "pending": {
+    "title": "Pending Transactions",
+    "noPending": "No pending transactions",
+    "pending": "Pending",
+    "pendingCount": "{{count}} pending transaction",
+    "pendingCount_plural": "{{count}} pending transactions",
+    "to": "To: {{address}}",
+    "tx": "TX: {{txid}}"
+  },
+  "welcome": {
+    "title": "Welcome to Tapylet",
+    "subtitle": "Your Tapyrus wallet",
+    "createWallet": "Create New Wallet",
+    "restoreWallet": "Restore Wallet"
+  },
+  "createWallet": {
+    "title": "Create Wallet",
+    "generating": "Generating secure wallet..."
+  },
+  "mnemonic": {
+    "title": "Recovery Phrase",
+    "subtitle": "Write down these 12 words in order. You'll need them to recover your wallet.",
+    "warning": "Never share your recovery phrase with anyone!",
+    "continue": "I've written it down"
+  },
+  "mnemonicConfirm": {
+    "title": "Confirm Recovery Phrase",
+    "subtitle": "Select the words in the correct order to confirm your recovery phrase.",
+    "errors": {
+      "incorrectOrder": "Incorrect order. Please try again."
+    }
+  },
+  "restoreWallet": {
+    "title": "Restore Wallet",
+    "subtitle": "Enter your 12-word recovery phrase to restore your wallet.",
+    "placeholder": "Enter your recovery phrase...",
+    "restore": "Restore Wallet",
+    "errors": {
+      "invalidMnemonic": "Invalid recovery phrase. Please check and try again."
+    }
+  },
+  "passwordSetup": {
+    "title": "Set Password",
+    "subtitle": "Create a password to secure your wallet.",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "setPassword": "Set Password",
+    "errors": {
+      "minLength": "Password must be at least 8 characters",
+      "noMatch": "Passwords do not match"
+    }
+  },
+  "unlock": {
+    "title": "Unlock Wallet",
+    "subtitle": "Enter your password to unlock your wallet.",
+    "password": "Password",
+    "unlock": "Unlock",
+    "errors": {
+      "incorrectPassword": "Incorrect password"
+    }
+  }
+}

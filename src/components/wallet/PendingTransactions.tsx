@@ -1,4 +1,5 @@
 import React from "react"
+import { useTranslation } from "react-i18next"
 import type { PendingTransaction } from "../../lib/storage/pendingTxStore"
 import { formatTpc } from "../../lib/api"
 
@@ -13,6 +14,8 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
   isOpen,
   onClose,
 }) => {
+  const { t } = useTranslation()
+
   if (!isOpen) return null
 
   const formatAddress = (address: string) => {
@@ -33,7 +36,7 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
       <div className="relative bg-white rounded-xl shadow-lg w-full max-w-sm mx-4 p-6 max-h-[80vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">Pending Transactions</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{t("pending.title")}</h2>
           <button
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-slate-100 transition-colors">
@@ -55,7 +58,7 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
           {transactions.length === 0 ? (
-            <p className="text-center text-slate-500 py-8">No pending transactions</p>
+            <p className="text-center text-slate-500 py-8">{t("pending.noPending")}</p>
           ) : (
             <div className="space-y-3">
               {transactions.map((tx) => (
@@ -64,15 +67,15 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
                   className="bg-slate-50 rounded-lg p-3 border border-slate-200">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-orange-600">
-                      Pending
+                      {t("pending.pending")}
                     </span>
                     <span className="text-sm font-semibold text-slate-800">
                       -{formatTpc(tx.amount)} TPC
                     </span>
                   </div>
                   <div className="text-xs text-slate-500 space-y-1">
-                    <p>To: {formatAddress(tx.toAddress)}</p>
-                    <p>TX: {formatAddress(tx.txid)}</p>
+                    <p>{t("pending.to", { address: formatAddress(tx.toAddress) })}</p>
+                    <p>{t("pending.tx", { txid: formatAddress(tx.txid) })}</p>
                     <p>{formatTime(tx.timestamp)}</p>
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 import React from "react"
+import { useTranslation } from "react-i18next"
 import { QRCodeSVG } from "qrcode.react"
 import { AddressDisplay } from "./AddressDisplay"
 import { Button } from "../ui"
@@ -10,6 +11,8 @@ interface ReceiveModalProps {
 }
 
 export const ReceiveModal: React.FC<ReceiveModalProps> = ({ address, isOpen, onClose }) => {
+  const { t } = useTranslation()
+
   if (!isOpen) return null
 
   return (
@@ -24,7 +27,7 @@ export const ReceiveModal: React.FC<ReceiveModalProps> = ({ address, isOpen, onC
       <div className="relative bg-white rounded-xl shadow-lg w-full max-w-sm mx-4 p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-slate-800">Receive TPC</h2>
+          <h2 className="text-lg font-semibold text-slate-800">{t("receive.title")}</h2>
           <button
             onClick={onClose}
             className="p-1 rounded-lg hover:bg-slate-100 transition-colors"
@@ -49,13 +52,13 @@ export const ReceiveModal: React.FC<ReceiveModalProps> = ({ address, isOpen, onC
 
         {/* Address */}
         <div className="mb-6">
-          <p className="text-sm text-slate-500 mb-2">Your Address</p>
+          <p className="text-sm text-slate-500 mb-2">{t("receive.yourAddress")}</p>
           <AddressDisplay address={address} showFull={true} />
         </div>
 
         {/* Close Button */}
         <Button variant="outline" fullWidth onClick={onClose}>
-          Close
+          {t("common.close")}
         </Button>
       </div>
     </div>

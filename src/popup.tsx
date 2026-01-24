@@ -3,6 +3,7 @@ import { Loading } from "./components/ui"
 import { walletStorage } from "./lib/storage/secureStore"
 import { WelcomeScreen, CreateWalletScreen, MnemonicDisplayScreen, MnemonicConfirmScreen, PasswordSetupScreen, RestoreWalletScreen, UnlockScreen, MainWalletScreen } from "./screens"
 import type { AppScreen } from "./types/wallet"
+import "./lib/i18n"
 import "./styles/globals.css"
 
 function IndexPopup() {

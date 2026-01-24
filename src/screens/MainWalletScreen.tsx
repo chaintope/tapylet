@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { Button, Card, CardContent } from "../components/ui"
 import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions } from "../components/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
@@ -15,6 +16,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   address,
   onNavigate,
 }) => {
+  const { t } = useTranslation()
   const [showReceiveModal, setShowReceiveModal] = useState(false)
   const [showSendModal, setShowSendModal] = useState(false)
   const [showPendingModal, setShowPendingModal] = useState(false)
@@ -57,7 +59,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
       setBalance(bal)
     } catch (err) {
       console.error("Failed to fetch balance:", err)
-      setBalanceError("Failed to load")
+      setBalanceError(t("wallet.failedToLoad"))
     } finally {
       setIsLoadingBalance(false)
     }
@@ -99,11 +101,11 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
                 />
               </svg>
             </div>
-            <span className="font-medium">Tapylet</span>
+            <span className="font-medium">{t("wallet.title")}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs bg-white/20 px-2 py-1 rounded">
-              Testnet
+              {t("wallet.testnet")}
             </span>
             <button
               onClick={handleLock}
@@ -127,7 +129,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
 
         {/* Balance */}
         <div className="text-center">
-          <p className="text-white/60 text-sm mb-1">Total Balance</p>
+          <p className="text-white/60 text-sm mb-1">{t("wallet.totalBalance")}</p>
           <p className="text-3xl font-bold">
             {isLoadingBalance ? (
               <span className="animate-pulse">...</span>
@@ -137,7 +139,6 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
               `${formatTpc(balance ?? 0)} TPC`
             )}
           </p>
-          <p className="text-white/60 text-sm mt-1">Tapyrus Testnet</p>
         </div>
       </div>
 
@@ -147,7 +148,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         <Card className="mb-4">
           <CardContent>
             <p className="text-sm font-medium text-slate-700 mb-3">
-              Your Address
+              {t("wallet.yourAddress")}
             </p>
             <AddressDisplay address={address} showFull />
           </CardContent>
@@ -168,7 +169,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
                 d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
               />
             </svg>
-            Send
+            {t("common.send")}
           </Button>
           <Button variant="outline" onClick={() => setShowReceiveModal(true)}>
             <svg
@@ -183,7 +184,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
               />
             </svg>
-            Receive
+            {t("common.receive")}
           </Button>
         </div>
 
@@ -195,7 +196,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
               <span className="text-sm font-medium text-orange-700">
-                {pendingTxs.length} pending transaction{pendingTxs.length > 1 ? "s" : ""}
+                {t("pending.pendingCount", { count: pendingTxs.length })}
               </span>
             </div>
             <svg
@@ -217,7 +218,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
       {/* Footer */}
       <div className="p-6 pt-0">
         <p className="text-xs text-slate-400 text-center">
-          Connected to Tapyrus Testnet
+          {t("wallet.connectedTo")}
         </p>
       </div>
 
