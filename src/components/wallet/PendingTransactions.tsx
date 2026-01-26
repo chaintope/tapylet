@@ -1,7 +1,7 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 import type { PendingTransaction } from "../../lib/storage/pendingTxStore"
-import { formatTpc } from "../../lib/api"
+import { formatTpc, getExplorerTxUrl } from "../../lib/api"
 
 interface PendingTransactionsProps {
   transactions: PendingTransaction[]
@@ -75,7 +75,17 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
                   </div>
                   <div className="text-xs text-slate-500 space-y-1">
                     <p>{t("pending.to", { address: formatAddress(tx.toAddress) })}</p>
-                    <p>{t("pending.tx", { txid: formatAddress(tx.txid) })}</p>
+                    <p>
+                      TX:{" "}
+                      <a
+                        href={getExplorerTxUrl(tx.txid)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 hover:text-primary-700 underline"
+                        onClick={(e) => e.stopPropagation()}>
+                        {formatAddress(tx.txid)}
+                      </a>
+                    </p>
                     <p>{formatTime(tx.timestamp)}</p>
                   </div>
                 </div>

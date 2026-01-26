@@ -1,6 +1,13 @@
 const EXPLORER_API_URL = process.env.PLASMO_PUBLIC_EXPLORER_API_URL
   ?? "https://testnet-explorer.tapyrus.dev.chaintope.com/api"
 
+const EXPLORER_URL = process.env.PLASMO_PUBLIC_EXPLORER_URL
+  ?? "https://testnet-explorer.tapyrus.dev.chaintope.com"
+
+export const getExplorerTxUrl = (txid: string): string => {
+  return `${EXPLORER_URL}/tx/${txid}`
+}
+
 // Color ID for native TPC (uncolored coins)
 const TPC_COLOR_ID = "000000000000000000000000000000000000000000000000000000000000000000"
 
@@ -52,6 +59,33 @@ export const getBalance = async (address: string): Promise<number> => {
   const info = await getAddressInfo(address)
   const tpcBalance = info.balances.find(b => b.colorId === TPC_COLOR_ID)
   return tpcBalance?.balanced ?? 0
+}
+
+export interface BalanceDetails {
+  confirmed: number
+  unconfirmed: number
+  total: number
+}
+
+export const getBalanceDetails = async (address: string): Promise<BalanceDetails> => {
+  const utxos = await getAddressUtxos(address)
+
+  let confirmed = 0
+  let unconfirmed = 0
+
+  for (const utxo of utxos) {
+    if (utxo.status.confirmed) {
+      confirmed += utxo.value
+    } else {
+      unconfirmed += utxo.value
+    }
+  }
+
+  return {
+    confirmed,
+    unconfirmed,
+    total: confirmed + unconfirmed,
+  }
 }
 
 export const formatTpc = (tapyrus: number): string => {
