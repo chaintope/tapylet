@@ -4,7 +4,7 @@ import { Button, Card, CardContent } from "../components/ui"
 import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions } from "../components/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
-import { getBalanceDetails, formatTpc, getTransactionInfo, type BalanceDetails } from "../lib/api"
+import { getAllBalances, formatTpc, getTransactionInfo, formatColorId, getExplorerColorUrl, type AllBalances } from "../lib/api"
 import type { AppScreen } from "../types/wallet"
 
 interface MainWalletScreenProps {
@@ -20,7 +20,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   const [showReceiveModal, setShowReceiveModal] = useState(false)
   const [showSendModal, setShowSendModal] = useState(false)
   const [showPendingModal, setShowPendingModal] = useState(false)
-  const [balance, setBalance] = useState<BalanceDetails | null>(null)
+  const [balances, setBalances] = useState<AllBalances | null>(null)
   const [isLoadingBalance, setIsLoadingBalance] = useState(true)
   const [balanceError, setBalanceError] = useState<string | null>(null)
   const [pendingTxs, setPendingTxs] = useState<PendingTransaction[]>([])
@@ -40,8 +40,8 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
     }
 
     // Fetch balance and pending txs together
-    const [bal, updatedTxs] = await Promise.all([
-      getBalanceDetails(address).catch((err) => {
+    const [allBal, updatedTxs] = await Promise.all([
+      getAllBalances(address).catch((err) => {
         console.error("Failed to fetch balance:", err)
         return null
       }),
@@ -49,8 +49,8 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
     ])
 
     // Update state together
-    if (bal) {
-      setBalance(bal)
+    if (allBal) {
+      setBalances(allBal)
       setBalanceError(null)
     } else {
       setBalanceError(t("wallet.failedToLoad"))
@@ -126,12 +126,12 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
           ) : (
             <>
               <p className="text-3xl font-bold">
-                {formatTpc(balance?.total ?? 0)} TPC
+                {formatTpc(balances?.tpc.total ?? 0)} TPC
               </p>
-              {balance && balance.unconfirmed !== 0 && (
+              {balances && balances.tpc.unconfirmed !== 0 && (
                 <div className="mt-2 text-xs text-white/70 flex justify-center gap-4">
-                  <span>{t("wallet.confirmed")}: {formatTpc(balance.confirmed)}</span>
-                  <span>{t("wallet.unconfirmed")}: {balance.unconfirmed >= 0 ? "+" : ""}{formatTpc(balance.unconfirmed)}</span>
+                  <span>{t("wallet.confirmed")}: {formatTpc(balances.tpc.confirmed)}</span>
+                  <span>{t("wallet.unconfirmed")}: {balances.tpc.unconfirmed >= 0 ? "+" : ""}{formatTpc(balances.tpc.unconfirmed)}</span>
                 </div>
               )}
             </>
@@ -150,6 +150,42 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             <AddressDisplay address={address} showFull />
           </CardContent>
         </Card>
+
+        {/* Assets */}
+        {balances && balances.assets.length > 0 && (
+          <Card className="mb-4">
+            <CardContent>
+              <p className="text-sm font-medium text-slate-700 mb-3">
+                {t("wallet.assets")}
+              </p>
+              <div className="space-y-2">
+                {balances.assets.map((asset) => (
+                  <div
+                    key={asset.colorId}
+                    className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                    <a
+                      href={getExplorerColorUrl(asset.colorId)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-mono text-primary-600 hover:text-primary-700 underline">
+                      {formatColorId(asset.colorId)}
+                    </a>
+                    <div className="text-right">
+                      <span className="text-sm font-semibold text-slate-800">
+                        {asset.total.toLocaleString()}
+                      </span>
+                      {asset.unconfirmed !== 0 && (
+                        <span className="text-xs text-slate-500 ml-1">
+                          ({asset.unconfirmed >= 0 ? "+" : ""}{asset.unconfirmed})
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Actions */}
         <div className="grid grid-cols-2 gap-3">
@@ -229,15 +265,17 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
       {/* Send Modal */}
       <SendModal
         address={address}
-        balance={balance?.total ?? 0}
+        tpcBalance={balances?.tpc ?? { confirmed: 0, unconfirmed: 0, total: 0 }}
+        assets={balances?.assets ?? []}
         isOpen={showSendModal}
         onClose={() => setShowSendModal(false)}
-        onSuccess={async (txid: string, amount: number, toAddress: string) => {
+        onSuccess={async (txid: string, amount: number, toAddress: string, colorId?: string) => {
           await pendingTxStore.add({
             txid,
             amount,
             toAddress,
             timestamp: Date.now(),
+            colorId,
           })
           // Wait for API to reflect the new transaction, then refresh
           await new Promise(resolve => setTimeout(resolve, 1000))

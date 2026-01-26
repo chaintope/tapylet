@@ -8,8 +8,9 @@ export const getExplorerTxUrl = (txid: string): string => {
   return `${EXPLORER_URL}/tx/${txid}`
 }
 
-// Color ID for native TPC (uncolored coins)
-const TPC_COLOR_ID = "000000000000000000000000000000000000000000000000000000000000000000"
+export const getExplorerColorUrl = (colorId: string): string => {
+  return `${EXPLORER_URL}/color/${colorId}`
+}
 
 export interface BalanceInfo {
   colorId: string
@@ -27,6 +28,19 @@ export interface AddressInfo {
   }
 }
 
+export interface UtxoResponse {
+  txid: string
+  vout: number
+  status: {
+    confirmed: boolean
+    block_height?: number
+    block_hash?: string
+    block_time?: number
+  }
+  value: number
+  color_id?: string
+}
+
 export interface Utxo {
   txid: string
   vout: number
@@ -37,6 +51,14 @@ export interface Utxo {
     block_time?: number
   }
   value: number
+  colorId?: string
+}
+
+// Color ID for native TPC
+export const TPC_COLOR_ID = "000000000000000000000000000000000000000000000000000000000000000000"
+
+export const isTpcColorId = (colorId: string | undefined): boolean => {
+  return !colorId || colorId === TPC_COLOR_ID
 }
 
 export const getAddressInfo = async (address: string): Promise<AddressInfo> => {
@@ -52,7 +74,15 @@ export const getAddressUtxos = async (address: string): Promise<Utxo[]> => {
   if (!response.ok) {
     throw new Error(`Failed to fetch UTXOs: ${response.status}`)
   }
-  return response.json()
+  const data: UtxoResponse[] = await response.json()
+  // Map snake_case to camelCase
+  return data.map((utxo) => ({
+    txid: utxo.txid,
+    vout: utxo.vout,
+    status: utxo.status,
+    value: utxo.value,
+    colorId: utxo.color_id,
+  }))
 }
 
 export const getBalance = async (address: string): Promise<number> => {
@@ -67,6 +97,18 @@ export interface BalanceDetails {
   total: number
 }
 
+export interface AssetBalance {
+  colorId: string
+  confirmed: number
+  unconfirmed: number
+  total: number
+}
+
+export interface AllBalances {
+  tpc: BalanceDetails
+  assets: AssetBalance[]
+}
+
 export const getBalanceDetails = async (address: string): Promise<BalanceDetails> => {
   const utxos = await getAddressUtxos(address)
 
@@ -74,10 +116,13 @@ export const getBalanceDetails = async (address: string): Promise<BalanceDetails
   let unconfirmed = 0
 
   for (const utxo of utxos) {
-    if (utxo.status.confirmed) {
-      confirmed += utxo.value
-    } else {
-      unconfirmed += utxo.value
+    // Only count TPC (uncolored) UTXOs
+    if (isTpcColorId(utxo.colorId)) {
+      if (utxo.status.confirmed) {
+        confirmed += utxo.value
+      } else {
+        unconfirmed += utxo.value
+      }
     }
   }
 
@@ -86,6 +131,51 @@ export const getBalanceDetails = async (address: string): Promise<BalanceDetails
     unconfirmed,
     total: confirmed + unconfirmed,
   }
+}
+
+export const getAllBalances = async (address: string): Promise<AllBalances> => {
+  const utxos = await getAddressUtxos(address)
+
+  const balanceMap = new Map<string, { confirmed: number; unconfirmed: number }>()
+
+  for (const utxo of utxos) {
+    const colorId = utxo.colorId ?? TPC_COLOR_ID
+    const current = balanceMap.get(colorId) ?? { confirmed: 0, unconfirmed: 0 }
+
+    if (utxo.status.confirmed) {
+      current.confirmed += utxo.value
+    } else {
+      current.unconfirmed += utxo.value
+    }
+
+    balanceMap.set(colorId, current)
+  }
+
+  // Extract TPC balance
+  const tpcBalance = balanceMap.get(TPC_COLOR_ID) ?? { confirmed: 0, unconfirmed: 0 }
+  balanceMap.delete(TPC_COLOR_ID)
+
+  // Convert map to array for assets
+  const assets: AssetBalance[] = Array.from(balanceMap.entries()).map(([colorId, balance]) => ({
+    colorId,
+    confirmed: balance.confirmed,
+    unconfirmed: balance.unconfirmed,
+    total: balance.confirmed + balance.unconfirmed,
+  }))
+
+  return {
+    tpc: {
+      confirmed: tpcBalance.confirmed,
+      unconfirmed: tpcBalance.unconfirmed,
+      total: tpcBalance.confirmed + tpcBalance.unconfirmed,
+    },
+    assets,
+  }
+}
+
+export const formatColorId = (colorId: string): string => {
+  if (colorId.length <= 16) return colorId
+  return `${colorId.slice(0, 8)}...${colorId.slice(-8)}`
 }
 
 export const formatTpc = (tapyrus: number): string => {

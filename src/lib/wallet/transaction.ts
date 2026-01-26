@@ -1,9 +1,19 @@
 import * as tapyrus from "tapyrusjs-lib"
-import { getAddressUtxos, broadcastTransaction, type Utxo } from "../api/esplora"
+import { getAddressUtxos, broadcastTransaction, isTpcColorId, type Utxo } from "../api/esplora"
 import { createHDWallet } from "./hdwallet"
 
 const DUST_THRESHOLD = 546
-const DEFAULT_FEE_RATE = 1 // tapyrus per byte
+const DEFAULT_FEE_RATE = 3 // tapyrus per byte
+
+// Filter UTXOs by colorId
+const filterUtxosByColorId = (utxos: Utxo[], colorId?: string): Utxo[] => {
+  if (!colorId || isTpcColorId(colorId)) {
+    // Return TPC (uncolored) UTXOs
+    return utxos.filter(u => isTpcColorId(u.colorId))
+  }
+  // Return colored UTXOs with matching colorId
+  return utxos.filter(u => u.colorId === colorId)
+}
 
 export interface SendResult {
   txid: string
@@ -59,10 +69,11 @@ export const createAndSignTransaction = async (
     throw new Error(`Amount must be at least ${DUST_THRESHOLD} tapyrus`)
   }
 
-  // Get UTXOs
-  const utxos = await getAddressUtxos(fromAddress)
+  // Get UTXOs (TPC only)
+  const allUtxos = await getAddressUtxos(fromAddress)
+  const utxos = filterUtxosByColorId(allUtxos)
   if (utxos.length === 0) {
-    throw new Error("No UTXOs available")
+    throw new Error("No TPC UTXOs available")
   }
 
   // Select UTXOs
@@ -118,4 +129,151 @@ export const estimateFee = async (
   const utxos = await getAddressUtxos(fromAddress)
   const { fee } = selectUtxos(utxos, amount, feeRate)
   return fee
+}
+
+export interface AssetSendOptions {
+  fromAddress: string
+  toAddress: string
+  amount: number
+  colorId: string
+  mnemonic: string
+  feeRate?: number
+}
+
+const selectAssetUtxos = (
+  assetUtxos: Utxo[],
+  targetAmount: number
+): { selectedUtxos: Utxo[]; totalInput: number } => {
+  const sortedUtxos = [...assetUtxos].sort((a, b) => b.value - a.value)
+
+  const selectedUtxos: Utxo[] = []
+  let totalInput = 0
+
+  for (const utxo of sortedUtxos) {
+    selectedUtxos.push(utxo)
+    totalInput += utxo.value
+
+    if (totalInput >= targetAmount) {
+      return { selectedUtxos, totalInput }
+    }
+  }
+
+  throw new Error("Insufficient asset balance")
+}
+
+export const createAndSignAssetTransaction = async (
+  options: AssetSendOptions
+): Promise<SendResult> => {
+  const { fromAddress, toAddress, amount, colorId, mnemonic, feeRate = DEFAULT_FEE_RATE } = options
+
+  if (amount <= 0) {
+    throw new Error("Amount must be greater than 0")
+  }
+
+  // Get all UTXOs
+  const allUtxos = await getAddressUtxos(fromAddress)
+
+  // Filter asset UTXOs
+  const assetUtxos = filterUtxosByColorId(allUtxos, colorId)
+  if (assetUtxos.length === 0) {
+    throw new Error("No asset UTXOs available")
+  }
+
+  // Filter TPC UTXOs for fee
+  const tpcUtxos = filterUtxosByColorId(allUtxos)
+  if (tpcUtxos.length === 0) {
+    throw new Error("No TPC UTXOs available for fee")
+  }
+
+  // Select asset UTXOs
+  const { selectedUtxos: selectedAssetUtxos, totalInput: totalAssetInput } =
+    selectAssetUtxos(assetUtxos, amount)
+
+  // Estimate fee based on number of inputs and outputs
+  // Asset tx: asset inputs + TPC input(s) for fee, asset output + asset change output + TPC change output
+  const estimatedAssetInputs = selectedAssetUtxos.length
+  const estimatedOutputs = 3 // asset recipient, asset change, TPC change
+  const estimatedSize = 10 + (estimatedAssetInputs + 1) * 148 + estimatedOutputs * 34
+  const estimatedFee = estimatedSize * feeRate
+
+  // Select TPC UTXOs for fee
+  const { selectedUtxos: selectedTpcUtxos, totalInput: totalTpcInput, fee } =
+    selectUtxos(tpcUtxos, estimatedFee, feeRate)
+
+  // Get keys from mnemonic
+  const keys = await createHDWallet(mnemonic)
+  const network = tapyrus.networks.prod
+  const keyPair = tapyrus.ECPair.fromWIF(keys.wif, network)
+
+  // Create transaction builder
+  const txb = new tapyrus.TransactionBuilder(network)
+  txb.setVersion(1) // Tapyrus feature field
+
+  // Decode from address to get pubkey hash for scripts
+  const fromAddressDecoded = tapyrus.address.fromBase58Check(fromAddress)
+  const colorIdBuffer = Buffer.from(colorId, "hex")
+
+  // Create prevOutScript for colored inputs
+  const coloredPrevOutScript = tapyrus.payments.cp2pkh({
+    colorId: colorIdBuffer,
+    hash: fromAddressDecoded.hash,
+    network,
+  }).output!
+
+  // Add asset inputs first (with prevOutScript)
+  for (const utxo of selectedAssetUtxos) {
+    txb.addInput(utxo.txid, utxo.vout, undefined, coloredPrevOutScript)
+  }
+
+  // Add TPC inputs for fee
+  for (const utxo of selectedTpcUtxos) {
+    txb.addInput(utxo.txid, utxo.vout)
+  }
+
+  // Create colored coin script for recipient
+  const toAddressDecoded = tapyrus.address.fromBase58Check(toAddress)
+  const recipientScript = tapyrus.payments.cp2pkh({
+    colorId: colorIdBuffer,
+    hash: toAddressDecoded.hash,
+    network,
+  }).output!
+
+  // Add asset output to recipient
+  txb.addOutput(recipientScript, amount)
+
+  // Add asset change output if needed
+  const assetChange = totalAssetInput - amount
+  if (assetChange > 0) {
+    const changeScript = tapyrus.payments.cp2pkh({
+      colorId: colorIdBuffer,
+      hash: fromAddressDecoded.hash,
+      network,
+    }).output!
+    txb.addOutput(changeScript, assetChange)
+  }
+
+  // Add TPC change output if needed
+  const tpcChange = totalTpcInput - fee
+  if (tpcChange >= DUST_THRESHOLD) {
+    txb.addOutput(fromAddress, tpcChange)
+  }
+
+  // Sign all inputs
+  const totalInputs = selectedAssetUtxos.length + selectedTpcUtxos.length
+  for (let i = 0; i < totalInputs; i++) {
+    txb.sign({
+      prevOutScriptType: i < selectedAssetUtxos.length ? "cp2pkh" : "p2pkh",
+      vin: i,
+      keyPair,
+    })
+  }
+
+  // Build and extract
+  const tx = txb.build()
+  const txHex = tx.toHex()
+
+  // Broadcast
+  const txid = await broadcastTransaction(txHex)
+
+  return { txid, txHex }
 }

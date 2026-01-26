@@ -2,36 +2,44 @@ import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
 import { validateAddress } from "../../lib/wallet"
-import { createAndSignTransaction } from "../../lib/wallet/transaction"
-import { parseTpc, formatTpc } from "../../lib/api"
+import { createAndSignTransaction, createAndSignAssetTransaction } from "../../lib/wallet/transaction"
+import { parseTpc, formatTpc, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails } from "../../lib/api"
 import { walletStorage } from "../../lib/storage/secureStore"
 
 interface SendModalProps {
   address: string
-  balance: number
+  tpcBalance: BalanceDetails
+  assets: AssetBalance[]
   isOpen: boolean
   onClose: () => void
-  onSuccess: (txid: string, amount: number, toAddress: string) => void
+  onSuccess: (txid: string, amount: number, toAddress: string, colorId?: string) => void
 }
 
 type SendStep = "input" | "confirm" | "sending" | "success" | "error"
 
 export const SendModal: React.FC<SendModalProps> = ({
   address,
-  balance,
+  tpcBalance,
+  assets,
   isOpen,
   onClose,
   onSuccess,
 }) => {
   const { t } = useTranslation()
   const [step, setStep] = useState<SendStep>("input")
+  const [selectedColorId, setSelectedColorId] = useState<string>(TPC_COLOR_ID)
   const [toAddress, setToAddress] = useState("")
   const [amount, setAmount] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [txid, setTxid] = useState<string | null>(null)
 
+  const isTpc = selectedColorId === TPC_COLOR_ID
+  const selectedAsset = assets.find(a => a.colorId === selectedColorId)
+  const availableBalance = isTpc ? tpcBalance.total : (selectedAsset?.total ?? 0)
+
   const resetState = () => {
     setStep("input")
+    setSelectedColorId(TPC_COLOR_ID)
     setToAddress("")
     setAmount("")
     setError(null)
@@ -63,20 +71,28 @@ export const SendModal: React.FC<SendModalProps> = ({
       return
     }
 
-    let amountTapyrus: number
-    try {
-      amountTapyrus = parseTpc(amount)
-    } catch {
-      setError(t("send.errors.invalidAmount"))
-      return
+    let parsedAmount: number
+    if (isTpc) {
+      try {
+        parsedAmount = parseTpc(amount)
+      } catch {
+        setError(t("send.errors.invalidAmount"))
+        return
+      }
+    } else {
+      parsedAmount = parseInt(amount, 10)
+      if (isNaN(parsedAmount)) {
+        setError(t("send.errors.invalidAmount"))
+        return
+      }
     }
 
-    if (amountTapyrus <= 0) {
+    if (parsedAmount <= 0) {
       setError(t("send.errors.amountGreaterThanZero"))
       return
     }
 
-    if (amountTapyrus > balance) {
+    if (parsedAmount > availableBalance) {
       setError(t("send.errors.insufficientBalance"))
       return
     }
@@ -94,17 +110,31 @@ export const SendModal: React.FC<SendModalProps> = ({
         throw new Error("Wallet not found")
       }
 
-      const amountTapyrus = parseTpc(amount)
-      const result = await createAndSignTransaction({
-        fromAddress: address,
-        toAddress: toAddress.trim(),
-        amount: amountTapyrus,
-        mnemonic: walletData.encryptedMnemonic,
-      })
+      let result
+      let sendAmount: number
+
+      if (isTpc) {
+        sendAmount = parseTpc(amount)
+        result = await createAndSignTransaction({
+          fromAddress: address,
+          toAddress: toAddress.trim(),
+          amount: sendAmount,
+          mnemonic: walletData.encryptedMnemonic,
+        })
+      } else {
+        sendAmount = parseInt(amount, 10)
+        result = await createAndSignAssetTransaction({
+          fromAddress: address,
+          toAddress: toAddress.trim(),
+          amount: sendAmount,
+          colorId: selectedColorId,
+          mnemonic: walletData.encryptedMnemonic,
+        })
+      }
 
       setTxid(result.txid)
       setStep("success")
-      onSuccess(result.txid, amountTapyrus, toAddress.trim())
+      onSuccess(result.txid, sendAmount, toAddress.trim(), isTpc ? undefined : selectedColorId)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Transaction failed")
       setStep("error")
@@ -147,6 +177,29 @@ export const SendModal: React.FC<SendModalProps> = ({
         {step === "input" && (
           <>
             <div className="space-y-4 mb-6">
+              {/* Asset Selector */}
+              {assets.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    {t("send.asset")}
+                  </label>
+                  <select
+                    value={selectedColorId}
+                    onChange={(e) => {
+                      setSelectedColorId(e.target.value)
+                      setAmount("")
+                    }}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    <option value={TPC_COLOR_ID}>TPC</option>
+                    {assets.map((asset) => (
+                      <option key={asset.colorId} value={asset.colorId}>
+                        {formatColorId(asset.colorId)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   {t("send.recipientAddress")}
@@ -160,18 +213,20 @@ export const SendModal: React.FC<SendModalProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
-                  {t("send.amount")}
+                  {isTpc ? t("send.amount") : t("send.assetAmount")}
                 </label>
                 <Input
                   type="number"
-                  step="0.00000001"
+                  step={isTpc ? "0.00000001" : "1"}
                   min="0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.00000000"
+                  placeholder={isTpc ? "0.00000000" : "0"}
                 />
                 <p className="text-xs text-slate-500 mt-1">
-                  {t("send.available", { amount: formatTpc(balance) })}
+                  {isTpc
+                    ? t("send.available", { amount: formatTpc(availableBalance) })
+                    : t("send.availableAsset", { amount: availableBalance.toLocaleString() })}
                 </p>
               </div>
             </div>
@@ -195,13 +250,27 @@ export const SendModal: React.FC<SendModalProps> = ({
         {step === "confirm" && (
           <>
             <div className="bg-slate-50 rounded-lg p-4 mb-6 space-y-3">
+              {!isTpc && (
+                <div>
+                  <p className="text-xs text-slate-500">{t("send.asset")}</p>
+                  <a
+                    href={getExplorerColorUrl(selectedColorId)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-mono text-primary-600 hover:text-primary-700 underline">
+                    {formatColorId(selectedColorId)}
+                  </a>
+                </div>
+              )}
               <div>
                 <p className="text-xs text-slate-500">{t("send.to")}</p>
                 <p className="text-sm font-mono break-all">{toAddress}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">{t("send.amount")}</p>
-                <p className="text-lg font-semibold">{amount} TPC</p>
+                <p className="text-xs text-slate-500">{isTpc ? t("send.amount") : t("send.assetAmount")}</p>
+                <p className="text-lg font-semibold">
+                  {isTpc ? `${amount} TPC` : `${parseInt(amount, 10).toLocaleString()}`}
+                </p>
               </div>
             </div>
 
@@ -250,7 +319,9 @@ export const SendModal: React.FC<SendModalProps> = ({
                 {t("send.transactionSent")}
               </p>
               <p className="text-sm text-slate-500 mb-4">
-                {t("send.sentSuccessfully", { amount })}
+                {isTpc
+                  ? t("send.sentSuccessfully", { amount })
+                  : t("send.assetSentSuccessfully", { amount: parseInt(amount, 10).toLocaleString() })}
               </p>
               {txid && (
                 <p className="text-xs font-mono text-slate-400 break-all px-4">

@@ -1,7 +1,7 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 import type { PendingTransaction } from "../../lib/storage/pendingTxStore"
-import { formatTpc, getExplorerTxUrl } from "../../lib/api"
+import { formatTpc, getExplorerTxUrl, formatColorId, getExplorerColorUrl } from "../../lib/api"
 
 interface PendingTransactionsProps {
   transactions: PendingTransaction[]
@@ -70,10 +70,25 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
                       {t("pending.pending")}
                     </span>
                     <span className="text-sm font-semibold text-slate-800">
-                      -{formatTpc(tx.amount)} TPC
+                      {tx.colorId
+                        ? `-${tx.amount.toLocaleString()}`
+                        : `-${formatTpc(tx.amount)} TPC`}
                     </span>
                   </div>
                   <div className="text-xs text-slate-500 space-y-1">
+                    {tx.colorId && (
+                      <p>
+                        {t("pending.asset")}:{" "}
+                        <a
+                          href={getExplorerColorUrl(tx.colorId)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary-600 hover:text-primary-700 underline"
+                          onClick={(e) => e.stopPropagation()}>
+                          {formatColorId(tx.colorId)}
+                        </a>
+                      </p>
+                    )}
                     <p>{t("pending.to", { address: formatAddress(tx.toAddress) })}</p>
                     <p>
                       TX:{" "}

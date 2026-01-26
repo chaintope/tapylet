@@ -5,6 +5,7 @@ export interface PendingTransaction {
   amount: number
   toAddress: string
   timestamp: number
+  colorId?: string
 }
 
 const STORAGE_KEY = "pending_transactions"
