@@ -135,12 +135,9 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
                 {formatTpc(balance?.total ?? 0)} TPC
               </p>
               {balance && balance.unconfirmed !== 0 && (
-                <div className="mt-2 text-sm text-white/70">
-                  <span>{t("wallet.confirmed")}: {formatTpc(balance.confirmed)} TPC</span>
-                  <span className="mx-2">|</span>
-                  <span>
-                    {t("wallet.unconfirmed")}: {balance.unconfirmed >= 0 ? "+" : ""}{formatTpc(balance.unconfirmed)} TPC
-                  </span>
+                <div className="mt-2 text-xs text-white/70 flex justify-center gap-4">
+                  <span>{t("wallet.confirmed")}: {formatTpc(balance.confirmed)}</span>
+                  <span>{t("wallet.unconfirmed")}: {balance.unconfirmed >= 0 ? "+" : ""}{formatTpc(balance.unconfirmed)}</span>
                 </div>
               )}
             </>
@@ -248,6 +245,8 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             toAddress,
             timestamp: Date.now(),
           })
+          // Wait for API to reflect the new transaction, then update both together
+          await new Promise(resolve => setTimeout(resolve, 1000))
           await Promise.all([fetchPendingTxs(), fetchBalance()])
         }}
       />
