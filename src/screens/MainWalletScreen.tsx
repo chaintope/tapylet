@@ -4,7 +4,7 @@ import { Button, Card, CardContent } from "../components/ui"
 import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions } from "../components/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
-import { getBalance, formatTpc, getTransactionInfo } from "../lib/api"
+import { getBalanceDetails, formatTpc, getTransactionInfo, type BalanceDetails } from "../lib/api"
 import type { AppScreen } from "../types/wallet"
 
 interface MainWalletScreenProps {
@@ -20,7 +20,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   const [showReceiveModal, setShowReceiveModal] = useState(false)
   const [showSendModal, setShowSendModal] = useState(false)
   const [showPendingModal, setShowPendingModal] = useState(false)
-  const [balance, setBalance] = useState<number | null>(null)
+  const [balance, setBalance] = useState<BalanceDetails | null>(null)
   const [isLoadingBalance, setIsLoadingBalance] = useState(true)
   const [balanceError, setBalanceError] = useState<string | null>(null)
   const [pendingTxs, setPendingTxs] = useState<PendingTransaction[]>([])
@@ -32,30 +32,25 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
 
   const checkPendingTxs = useCallback(async () => {
     const txs = await pendingTxStore.getAll()
-    let hasConfirmed = false
 
     for (const tx of txs) {
       try {
         const info = await getTransactionInfo(tx.txid)
         if (info.status.confirmed) {
           await pendingTxStore.remove(tx.txid)
-          hasConfirmed = true
         }
       } catch {
         // Transaction not found or error, keep in pending
       }
     }
 
-    if (hasConfirmed) {
-      fetchBalance()
-    }
     fetchPendingTxs()
   }, [fetchPendingTxs])
 
   const fetchBalance = useCallback(async () => {
     try {
       setBalanceError(null)
-      const bal = await getBalance(address)
+      const bal = await getBalanceDetails(address)
       setBalance(bal)
     } catch (err) {
       console.error("Failed to fetch balance:", err)
@@ -63,12 +58,12 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
     } finally {
       setIsLoadingBalance(false)
     }
-  }, [address])
+  }, [address, t])
 
   useEffect(() => {
     fetchBalance()
     fetchPendingTxs()
-    const balanceInterval = setInterval(fetchBalance, 30000) // Refresh every 30 seconds
+    const balanceInterval = setInterval(fetchBalance, 10000) // Refresh every 10 seconds
     const pendingInterval = setInterval(checkPendingTxs, 10000) // Check pending every 10 seconds
     return () => {
       clearInterval(balanceInterval)
@@ -130,15 +125,26 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         {/* Balance */}
         <div className="text-center">
           <p className="text-white/60 text-sm mb-1">{t("wallet.totalBalance")}</p>
-          <p className="text-3xl font-bold">
-            {isLoadingBalance ? (
-              <span className="animate-pulse">...</span>
-            ) : balanceError ? (
-              <span className="text-lg">{balanceError}</span>
-            ) : (
-              `${formatTpc(balance ?? 0)} TPC`
-            )}
-          </p>
+          {isLoadingBalance ? (
+            <p className="text-3xl font-bold animate-pulse">...</p>
+          ) : balanceError ? (
+            <p className="text-lg font-bold">{balanceError}</p>
+          ) : (
+            <>
+              <p className="text-3xl font-bold">
+                {formatTpc(balance?.total ?? 0)} TPC
+              </p>
+              {balance && balance.unconfirmed !== 0 && (
+                <div className="mt-2 text-sm text-white/70">
+                  <span>{t("wallet.confirmed")}: {formatTpc(balance.confirmed)} TPC</span>
+                  <span className="mx-2">|</span>
+                  <span>
+                    {t("wallet.unconfirmed")}: {balance.unconfirmed >= 0 ? "+" : ""}{formatTpc(balance.unconfirmed)} TPC
+                  </span>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
@@ -232,7 +238,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
       {/* Send Modal */}
       <SendModal
         address={address}
-        balance={balance ?? 0}
+        balance={balance?.total ?? 0}
         isOpen={showSendModal}
         onClose={() => setShowSendModal(false)}
         onSuccess={async (txid: string, amount: number, toAddress: string) => {
@@ -242,7 +248,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             toAddress,
             timestamp: Date.now(),
           })
-          fetchPendingTxs()
+          await Promise.all([fetchPendingTxs(), fetchBalance()])
         }}
       />
 
