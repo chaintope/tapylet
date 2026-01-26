@@ -25,14 +25,9 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   const [balanceError, setBalanceError] = useState<string | null>(null)
   const [pendingTxs, setPendingTxs] = useState<PendingTransaction[]>([])
 
-  const fetchPendingTxs = useCallback(async () => {
+  const refreshData = useCallback(async () => {
+    // Check and remove confirmed transactions
     const txs = await pendingTxStore.getAll()
-    setPendingTxs(txs)
-  }, [])
-
-  const checkPendingTxs = useCallback(async () => {
-    const txs = await pendingTxStore.getAll()
-
     for (const tx of txs) {
       try {
         const info = await getTransactionInfo(tx.txid)
@@ -44,32 +39,31 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
       }
     }
 
-    fetchPendingTxs()
-  }, [fetchPendingTxs])
+    // Fetch balance and pending txs together
+    const [bal, updatedTxs] = await Promise.all([
+      getBalanceDetails(address).catch((err) => {
+        console.error("Failed to fetch balance:", err)
+        return null
+      }),
+      pendingTxStore.getAll(),
+    ])
 
-  const fetchBalance = useCallback(async () => {
-    try {
-      setBalanceError(null)
-      const bal = await getBalanceDetails(address)
+    // Update state together
+    if (bal) {
       setBalance(bal)
-    } catch (err) {
-      console.error("Failed to fetch balance:", err)
+      setBalanceError(null)
+    } else {
       setBalanceError(t("wallet.failedToLoad"))
-    } finally {
-      setIsLoadingBalance(false)
     }
+    setPendingTxs(updatedTxs)
+    setIsLoadingBalance(false)
   }, [address, t])
 
   useEffect(() => {
-    fetchBalance()
-    fetchPendingTxs()
-    const balanceInterval = setInterval(fetchBalance, 10000) // Refresh every 10 seconds
-    const pendingInterval = setInterval(checkPendingTxs, 10000) // Check pending every 10 seconds
-    return () => {
-      clearInterval(balanceInterval)
-      clearInterval(pendingInterval)
-    }
-  }, [fetchBalance, fetchPendingTxs, checkPendingTxs])
+    refreshData()
+    const interval = setInterval(refreshData, 10000)
+    return () => clearInterval(interval)
+  }, [refreshData])
 
   const handleLock = () => {
     walletStorage.lock()
@@ -245,9 +239,9 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             toAddress,
             timestamp: Date.now(),
           })
-          // Wait for API to reflect the new transaction, then update both together
+          // Wait for API to reflect the new transaction, then refresh
           await new Promise(resolve => setTimeout(resolve, 1000))
-          await Promise.all([fetchPendingTxs(), fetchBalance()])
+          await refreshData()
         }}
       />
 
