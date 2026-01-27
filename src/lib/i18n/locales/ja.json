@@ -113,5 +113,11 @@
     "errors": {
       "incorrectPassword": "パスワードが正しくありません"
     }
+  },
+  "settings": {
+    "title": "設定",
+    "about": "アプリ情報",
+    "version": "バージョン",
+    "network": "ネットワーク"
   }
 }

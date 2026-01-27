@@ -113,5 +113,11 @@
     "errors": {
       "incorrectPassword": "Incorrect password"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "about": "About",
+    "version": "Version",
+    "network": "Network"
   }
 }

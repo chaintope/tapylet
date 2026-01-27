@@ -21,6 +21,7 @@ export type AppScreen =
   | "restore"
   | "unlock"
   | "main"
+  | "settings"
 
 export interface NavigationState {
   screen: AppScreen

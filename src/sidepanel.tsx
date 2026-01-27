@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Loading } from "./components/ui"
 import { walletStorage } from "./lib/storage/secureStore"
-import { WelcomeScreen, CreateWalletScreen, MnemonicDisplayScreen, MnemonicConfirmScreen, PasswordSetupScreen, RestoreWalletScreen, UnlockScreen, MainWalletScreen } from "./screens"
+import { WelcomeScreen, CreateWalletScreen, MnemonicDisplayScreen, MnemonicConfirmScreen, PasswordSetupScreen, RestoreWalletScreen, UnlockScreen, MainWalletScreen, SettingsScreen } from "./screens"
 import type { AppScreen } from "./types/wallet"
 import "./lib/i18n"
 import "./styles/globals.css"
@@ -41,6 +41,7 @@ function SidePanel() {
       case "restore": return <RestoreWalletScreen onNavigate={handleNavigate} onMnemonicEntered={handleMnemonicEntered} />
       case "unlock": return <UnlockScreen onNavigate={handleNavigate} onUnlock={handleUnlock} />
       case "main": return address ? <MainWalletScreen address={address} onNavigate={handleNavigate} /> : null
+      case "settings": return <SettingsScreen onNavigate={handleNavigate} />
       default: return <WelcomeScreen onNavigate={handleNavigate} />
     }
   }
