@@ -14,8 +14,8 @@ class WalletStorage {
   private isUnlocked: boolean = false
 
   constructor() {
-    this.secureStorage = new SecureStorage()
-    this.plainStorage = new Storage()
+    this.secureStorage = new SecureStorage({ area: "local" })
+    this.plainStorage = new Storage({ area: "local" })
   }
 
   async setPassword(password: string): Promise<void> {

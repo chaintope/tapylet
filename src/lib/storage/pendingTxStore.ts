@@ -9,7 +9,7 @@ export interface PendingTransaction {
 }
 
 const STORAGE_KEY = "pending_transactions"
-const storage = new Storage()
+const storage = new Storage({ area: "local" })
 
 export const pendingTxStore = {
   async getAll(): Promise<PendingTransaction[]> {
