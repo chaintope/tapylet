@@ -61,7 +61,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
 
   useEffect(() => {
     refreshData()
-    const interval = setInterval(refreshData, 10000)
+    const interval = setInterval(refreshData, 60000)
     return () => clearInterval(interval)
   }, [refreshData])
 
