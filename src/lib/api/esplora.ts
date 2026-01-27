@@ -1,3 +1,5 @@
+import * as tapyrus from "tapyrusjs-lib"
+
 const EXPLORER_API_URL = process.env.PLASMO_PUBLIC_EXPLORER_API_URL
   ?? "https://testnet-explorer.tapyrus.dev.chaintope.com/api"
 
@@ -6,6 +8,19 @@ const EXPLORER_URL = process.env.PLASMO_PUBLIC_EXPLORER_URL
 
 export const getExplorerTxUrl = (txid: string): string => {
   return `${EXPLORER_URL}/tx/${txid}`
+}
+
+// Generate colored coin address from regular address and colorId
+export const getColoredAddress = (address: string, colorId: string): string => {
+  const network = tapyrus.networks.prod
+  const decoded = tapyrus.address.fromBase58Check(address)
+  const colorIdBuffer = Buffer.from(colorId, "hex")
+  const payment = tapyrus.payments.cp2pkh({
+    colorId: colorIdBuffer,
+    hash: decoded.hash,
+    network,
+  })
+  return payment.address!
 }
 
 export const getExplorerColorUrl = (colorId: string): string => {

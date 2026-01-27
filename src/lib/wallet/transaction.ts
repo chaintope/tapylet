@@ -1,5 +1,5 @@
 import * as tapyrus from "tapyrusjs-lib"
-import { getAddressUtxos, broadcastTransaction, isTpcColorId, type Utxo } from "../api/esplora"
+import { getAddressUtxos, broadcastTransaction, isTpcColorId, getColoredAddress, type Utxo } from "../api/esplora"
 import { createHDWallet } from "./hdwallet"
 
 const DUST_THRESHOLD = 546
@@ -170,17 +170,16 @@ export const createAndSignAssetTransaction = async (
     throw new Error("Amount must be greater than 0")
   }
 
-  // Get all UTXOs
-  const allUtxos = await getAddressUtxos(fromAddress)
-
-  // Filter asset UTXOs
-  const assetUtxos = filterUtxosByColorId(allUtxos, colorId)
+  // Get asset UTXOs using colored address
+  const coloredFromAddress = getColoredAddress(fromAddress, colorId)
+  const assetUtxos = await getAddressUtxos(coloredFromAddress)
   if (assetUtxos.length === 0) {
     throw new Error("No asset UTXOs available")
   }
 
-  // Filter TPC UTXOs for fee
-  const tpcUtxos = filterUtxosByColorId(allUtxos)
+  // Get TPC UTXOs for fee using regular address
+  const tpcUtxosRaw = await getAddressUtxos(fromAddress)
+  const tpcUtxos = tpcUtxosRaw.filter(u => isTpcColorId(u.colorId))
   if (tpcUtxos.length === 0) {
     throw new Error("No TPC UTXOs available for fee")
   }
