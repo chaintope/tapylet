@@ -6,7 +6,7 @@ import type { AppScreen } from "./types/wallet"
 import "./lib/i18n"
 import "./styles/globals.css"
 
-function IndexPopup() {
+function SidePanel() {
   const [screen, setScreen] = useState<AppScreen>("loading")
   const [tempMnemonic, setTempMnemonic] = useState<string | null>(null)
   const [address, setAddress] = useState<string | null>(null)
@@ -45,7 +45,7 @@ function IndexPopup() {
     }
   }
 
-  return <div className="h-full">{renderScreen()}</div>
+  return <div className="h-full min-h-screen">{renderScreen()}</div>
 }
 
-export default IndexPopup
+export default SidePanel

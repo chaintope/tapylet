@@ -53,7 +53,14 @@
   "manifest": {
     "host_permissions": [
       "https://*/*"
-    ]
+    ],
+    "permissions": [
+      "sidePanel"
+    ],
+    "side_panel": {
+      "default_path": "sidepanel.html"
+    },
+    "action": {}
   },
   "overrides": {
     "get-intrinsic": "1.2.4"
