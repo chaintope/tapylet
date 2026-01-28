@@ -151,7 +151,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
               <p className="text-3xl font-bold">
                 {formatTpc(balances?.tpc.total ?? 0)} TPC
               </p>
-              {balances && balances.tpc.unconfirmed !== 0 && (
+              {balances && balances.tpc.unconfirmed !== 0 && balances.tpc.confirmed !== 0 && (
                 <div className="mt-2 text-xs text-white/70 flex justify-center gap-4">
                   <span>{t("wallet.confirmed")}: {formatTpc(balances.tpc.confirmed)}</span>
                   <span>{t("wallet.unconfirmed")}: {balances.tpc.unconfirmed >= 0 ? "+" : ""}{formatTpc(balances.tpc.unconfirmed)}</span>
@@ -197,7 +197,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
                       <span className="text-sm font-semibold text-slate-800">
                         {asset.total.toLocaleString()}
                       </span>
-                      {asset.unconfirmed !== 0 && (
+                      {asset.unconfirmed !== 0 && asset.confirmed !== 0 && (
                         <span className="text-xs text-slate-500 ml-1">
                           ({asset.unconfirmed >= 0 ? "+" : ""}{asset.unconfirmed})
                         </span>
@@ -300,9 +300,11 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             timestamp: Date.now(),
             colorId,
           })
-          // Wait for API to reflect the new transaction, then refresh
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          await refreshData()
+          // Retry refreshing until API reflects the new transaction
+          for (let i = 0; i < 5; i++) {
+            await new Promise(resolve => setTimeout(resolve, 2000))
+            await refreshData()
+          }
         }}
       />
 
