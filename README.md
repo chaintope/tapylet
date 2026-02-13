@@ -55,6 +55,20 @@ npm run build
 
 Build artifacts will be generated in `build/chrome-mv3-prod`.
 
+### Environment Variables
+
+Create a `.env.local` file to configure the backend connection:
+
+```bash
+# Explorer API endpoint (default: https://testnet-explorer.tapyrus.dev.chaintope.com/api)
+PLASMO_PUBLIC_EXPLORER_API_URL=http://localhost:3001/api
+
+# Explorer URL for transaction/color links (default: https://testnet-explorer.tapyrus.dev.chaintope.com)
+PLASMO_PUBLIC_EXPLORER_URL=http://localhost:4200
+```
+
+This is useful for local development with [tapyrus-explorer](https://github.com/chaintope/tapyrus-explorer).
+
 ## HD Wallet Derivation Path
 
 Compliant with [TIP-0044](https://github.com/chaintope/tips/blob/main/tip-0044.md):
