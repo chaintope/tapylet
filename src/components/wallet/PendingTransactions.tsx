@@ -1,16 +1,18 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 import type { PendingTransaction } from "../../lib/storage/pendingTxStore"
-import { formatTpc, getExplorerTxUrl, formatColorId, getExplorerColorUrl } from "../../lib/api"
+import { formatTpc, getExplorerTxUrl, formatColorId, getExplorerColorUrl, type Metadata } from "../../lib/api"
 
 interface PendingTransactionsProps {
   transactions: PendingTransaction[]
+  tokenMetadata: Map<string, Metadata>
   isOpen: boolean
   onClose: () => void
 }
 
 export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
   transactions,
+  tokenMetadata,
   isOpen,
   onClose,
 }) => {
@@ -79,14 +81,20 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
                     {tx.colorId && (
                       <p>
                         {t("pending.asset")}:{" "}
-                        <a
-                          href={getExplorerColorUrl(tx.colorId)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary-600 hover:text-primary-700 underline"
-                          onClick={(e) => e.stopPropagation()}>
-                          {formatColorId(tx.colorId)}
-                        </a>
+                        {tokenMetadata.get(tx.colorId) ? (
+                          <span className="font-medium text-slate-700">
+                            {tokenMetadata.get(tx.colorId)!.name} ({tokenMetadata.get(tx.colorId)!.symbol})
+                          </span>
+                        ) : (
+                          <a
+                            href={getExplorerColorUrl(tx.colorId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary-600 hover:text-primary-700 underline"
+                            onClick={(e) => e.stopPropagation()}>
+                            {formatColorId(tx.colorId)}
+                          </a>
+                        )}
                       </p>
                     )}
                     <p>{t("pending.to", { address: formatAddress(tx.toAddress) })}</p>

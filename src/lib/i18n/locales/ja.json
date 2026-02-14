@@ -114,6 +114,17 @@
       "incorrectPassword": "パスワードが正しくありません"
     }
   },
+  "assetDetail": {
+    "name": "名前",
+    "symbol": "シンボル",
+    "description": "説明",
+    "decimals": "小数点桁数",
+    "version": "バージョン",
+    "website": "ウェブサイト",
+    "balance": "残高",
+    "total": "合計",
+    "viewInExplorer": "エクスプローラーで表示"
+  },
   "settings": {
     "title": "設定",
     "about": "アプリ情報",

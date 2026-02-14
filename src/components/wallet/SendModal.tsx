@@ -3,13 +3,14 @@ import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
 import { validateAddress } from "../../lib/wallet"
 import { createAndSignTransaction, createAndSignAssetTransaction } from "../../lib/wallet/transaction"
-import { parseTpc, formatTpc, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails } from "../../lib/api"
+import { parseTpc, formatTpc, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails, type Metadata } from "../../lib/api"
 import { walletStorage } from "../../lib/storage/secureStore"
 
 interface SendModalProps {
   address: string
   tpcBalance: BalanceDetails
   assets: AssetBalance[]
+  tokenMetadata: Map<string, Metadata>
   isOpen: boolean
   onClose: () => void
   onSuccess: (txid: string, amount: number, toAddress: string, colorId?: string) => void
@@ -21,6 +22,7 @@ export const SendModal: React.FC<SendModalProps> = ({
   address,
   tpcBalance,
   assets,
+  tokenMetadata,
   isOpen,
   onClose,
   onSuccess,
@@ -191,11 +193,14 @@ export const SendModal: React.FC<SendModalProps> = ({
                     }}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                     <option value={TPC_COLOR_ID}>TPC</option>
-                    {assets.map((asset) => (
-                      <option key={asset.colorId} value={asset.colorId}>
-                        {formatColorId(asset.colorId)}
-                      </option>
-                    ))}
+                    {assets.map((asset) => {
+                      const meta = tokenMetadata.get(asset.colorId)
+                      return (
+                        <option key={asset.colorId} value={asset.colorId}>
+                          {meta ? `${meta.name} (${meta.symbol})` : formatColorId(asset.colorId)}
+                        </option>
+                      )
+                    })}
                   </select>
                 </div>
               )}
@@ -253,13 +258,20 @@ export const SendModal: React.FC<SendModalProps> = ({
               {!isTpc && (
                 <div>
                   <p className="text-xs text-slate-500">{t("send.asset")}</p>
-                  <a
-                    href={getExplorerColorUrl(selectedColorId)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm font-mono text-primary-600 hover:text-primary-700 underline">
-                    {formatColorId(selectedColorId)}
-                  </a>
+                  {tokenMetadata.get(selectedColorId) ? (
+                    <p className="text-sm font-medium text-slate-800">
+                      {tokenMetadata.get(selectedColorId)!.name}
+                      <span className="text-slate-500 ml-1">({tokenMetadata.get(selectedColorId)!.symbol})</span>
+                    </p>
+                  ) : (
+                    <a
+                      href={getExplorerColorUrl(selectedColorId)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-mono text-primary-600 hover:text-primary-700 underline">
+                      {formatColorId(selectedColorId)}
+                    </a>
+                  )}
                 </div>
               )}
               <div>

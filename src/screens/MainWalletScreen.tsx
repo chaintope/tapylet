@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Card, CardContent } from "../components/ui"
-import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions } from "../components/wallet"
+import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions, AssetDetailModal } from "../components/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
-import { getAllBalances, formatTpc, getTransactionInfo, formatColorId, getExplorerColorUrl, type AllBalances } from "../lib/api"
+import { getAllBalances, formatTpc, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, type AllBalances, type Metadata } from "../lib/api"
 import type { AppScreen } from "../types/wallet"
 
 interface MainWalletScreenProps {
@@ -24,6 +24,8 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   const [isLoadingBalance, setIsLoadingBalance] = useState(true)
   const [balanceError, setBalanceError] = useState<string | null>(null)
   const [pendingTxs, setPendingTxs] = useState<PendingTransaction[]>([])
+  const [tokenMetadata, setTokenMetadata] = useState<Map<string, Metadata>>(new Map())
+  const [selectedAssetColorId, setSelectedAssetColorId] = useState<string | null>(null)
 
   const refreshData = useCallback(async () => {
     // Check and remove confirmed transactions
@@ -52,6 +54,11 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
     if (allBal) {
       setBalances(allBal)
       setBalanceError(null)
+      // Fetch token metadata for colored coins
+      if (allBal.assets.length > 0) {
+        const colorIds = allBal.assets.map((a) => a.colorId)
+        getTokenMetadataBatch(colorIds).then(setTokenMetadata)
+      }
     } else {
       setBalanceError(t("wallet.failedToLoad"))
     }
@@ -182,29 +189,47 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
                 {t("wallet.assets")}
               </p>
               <div className="space-y-2">
-                {balances.assets.map((asset) => (
-                  <div
-                    key={asset.colorId}
-                    className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
-                    <a
-                      href={getExplorerColorUrl(asset.colorId)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-mono text-primary-600 hover:text-primary-700 underline">
-                      {formatColorId(asset.colorId)}
-                    </a>
-                    <div className="text-right">
-                      <span className="text-sm font-semibold text-slate-800">
-                        {asset.total.toLocaleString()}
-                      </span>
-                      {asset.unconfirmed !== 0 && asset.confirmed !== 0 && (
-                        <span className="text-xs text-slate-500 ml-1">
-                          ({asset.unconfirmed >= 0 ? "+" : ""}{asset.unconfirmed})
+                {balances.assets.map((asset) => {
+                  const meta = tokenMetadata.get(asset.colorId)
+                  return (
+                    <button
+                      key={asset.colorId}
+                      onClick={() => setSelectedAssetColorId(asset.colorId)}
+                      className="w-full flex items-center justify-between p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors text-left">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        {meta?.icon && (
+                          <img
+                            src={meta.icon}
+                            alt={meta.name}
+                            className="w-6 h-6 rounded-full flex-shrink-0"
+                          />
+                        )}
+                        <div className="min-w-0">
+                          {meta ? (
+                            <span className="text-sm font-medium text-slate-800 block truncate">
+                              {meta.name}
+                              <span className="text-slate-500 ml-1">({meta.symbol})</span>
+                            </span>
+                          ) : (
+                            <span className="text-xs font-mono text-slate-600 block truncate">
+                              {formatColorId(asset.colorId)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0 ml-2">
+                        <span className="text-sm font-semibold text-slate-800">
+                          {asset.total.toLocaleString()}
                         </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                        {asset.unconfirmed !== 0 && asset.confirmed !== 0 && (
+                          <span className="text-xs text-slate-500 ml-1">
+                            ({asset.unconfirmed >= 0 ? "+" : ""}{asset.unconfirmed})
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </CardContent>
           </Card>
@@ -290,6 +315,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         address={address}
         tpcBalance={balances?.tpc ?? { confirmed: 0, unconfirmed: 0, total: 0 }}
         assets={balances?.assets ?? []}
+        tokenMetadata={tokenMetadata}
         isOpen={showSendModal}
         onClose={() => setShowSendModal(false)}
         onSuccess={async (txid: string, amount: number, toAddress: string, colorId?: string) => {
@@ -308,9 +334,25 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         }}
       />
 
+      {/* Asset Detail Modal */}
+      {selectedAssetColorId && balances && (() => {
+        const asset = balances.assets.find((a) => a.colorId === selectedAssetColorId)
+        if (!asset) return null
+        return (
+          <AssetDetailModal
+            colorId={selectedAssetColorId}
+            balance={asset}
+            metadata={tokenMetadata.get(selectedAssetColorId) ?? null}
+            isOpen={true}
+            onClose={() => setSelectedAssetColorId(null)}
+          />
+        )
+      })()}
+
       {/* Pending Transactions Modal */}
       <PendingTransactions
         transactions={pendingTxs}
+        tokenMetadata={tokenMetadata}
         isOpen={showPendingModal}
         onClose={() => setShowPendingModal(false)}
       />

@@ -114,6 +114,17 @@
       "incorrectPassword": "Incorrect password"
     }
   },
+  "assetDetail": {
+    "name": "Name",
+    "symbol": "Symbol",
+    "description": "Description",
+    "decimals": "Decimals",
+    "version": "Version",
+    "website": "Website",
+    "balance": "Balance",
+    "total": "Total",
+    "viewInExplorer": "View in Explorer"
+  },
   "settings": {
     "title": "Settings",
     "about": "About",
