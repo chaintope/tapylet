@@ -26,18 +26,18 @@ A Chrome extension wallet for Tapyrus Testnet.
 ### Prerequisites
 
 - Node.js 18+
-- npm or pnpm
+- pnpm
 
 ### Setup
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Start Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ### Load in Chrome
@@ -50,7 +50,7 @@ npm run dev
 ### Production Build
 
 ```bash
-npm run build
+pnpm build
 ```
 
 Build artifacts will be generated in `build/chrome-mv3-prod`.
