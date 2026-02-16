@@ -395,8 +395,12 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             colorId={selectedAssetColorId}
             balance={asset}
             metadata={tokenMetadata.get(selectedAssetColorId) ?? null}
+            address={address}
             isOpen={true}
             onClose={() => setSelectedAssetColorId(null)}
+            onBurnSuccess={() => {
+              refreshData()
+            }}
           />
         )
       })()}

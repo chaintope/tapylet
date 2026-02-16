@@ -1,27 +1,36 @@
 import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
-import { Button } from "../ui"
+import { Button, Input } from "../ui"
 import { formatColorId, getExplorerColorUrl } from "../../lib/api"
 import { issuedTokenStore, type IssuedToken } from "../../lib/storage/issuedTokenStore"
 import { sanitizeUrl, sanitizeImageUrl } from "../../lib/utils/sanitize"
+import { burnAsset } from "../../lib/wallet/transaction"
+import { walletStorage } from "../../lib/storage/secureStore"
+import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "../../lib/utils/validation"
 import type { AssetBalance, Metadata } from "../../lib/api"
 
 const TOKEN_REGISTRY_URL = "https://github.com/chaintope/tapyrus-token-registry/issues/new?template=register-token.yml"
+
+type BurnStep = "idle" | "input" | "confirm" | "burning" | "success" | "error"
 
 interface AssetDetailModalProps {
   colorId: string
   balance: AssetBalance
   metadata: Metadata | null
+  address: string
   isOpen: boolean
   onClose: () => void
+  onBurnSuccess?: () => void
 }
 
 export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
   colorId,
   balance,
   metadata,
+  address,
   isOpen,
   onClose,
+  onBurnSuccess,
 }) => {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
@@ -29,11 +38,29 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
   const [issuedToken, setIssuedToken] = useState<IssuedToken | null>(null)
   const [showRegistryInfo, setShowRegistryInfo] = useState(false)
 
+  // Burn state
+  const [burnStep, setBurnStep] = useState<BurnStep>("idle")
+  const [burnAmount, setBurnAmount] = useState("")
+  const [burnError, setBurnError] = useState<string | null>(null)
+  const [burnTxid, setBurnTxid] = useState<string | null>(null)
+  const [originalBalance, setOriginalBalance] = useState<number>(0)
+
   useEffect(() => {
     if (isOpen && colorId) {
       issuedTokenStore.get(colorId).then(setIssuedToken)
     }
   }, [isOpen, colorId])
+
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset burn state when modal closes
+      setBurnStep("idle")
+      setBurnAmount("")
+      setBurnError(null)
+      setBurnTxid(null)
+      setOriginalBalance(0)
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -55,6 +82,77 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
     if (!issuedToken) return ""
     const { tokenType, ...jsonMetadata } = issuedToken.metadata
     return JSON.stringify(jsonMetadata, null, 2)
+  }
+
+  const handleBurnStart = () => {
+    setBurnStep("input")
+    setBurnAmount("")
+    setBurnError(null)
+    setOriginalBalance(balance.total)
+  }
+
+  const handleBurnConfirm = () => {
+    setBurnError(null)
+
+    if (!burnAmount.trim()) {
+      setBurnError(t("burn.errors.amountRequired"))
+      return
+    }
+
+    const parsedAmount = parseAndValidateAmount(burnAmount, MAX_COLORED_AMOUNT)
+    if (parsedAmount === null) {
+      setBurnError(t("burn.errors.invalidAmount"))
+      return
+    }
+
+    if (parsedAmount <= 0) {
+      setBurnError(t("burn.errors.amountGreaterThanZero"))
+      return
+    }
+
+    if (parsedAmount > balance.total) {
+      setBurnError(t("burn.errors.insufficientBalance"))
+      return
+    }
+
+    setBurnStep("confirm")
+  }
+
+  const handleBurnExecute = async () => {
+    setBurnStep("burning")
+    setBurnError(null)
+
+    try {
+      const walletData = await walletStorage.getWallet()
+      if (!walletData) {
+        throw new Error("Wallet not found")
+      }
+
+      const parsedAmount = parseAndValidateAmount(burnAmount, MAX_COLORED_AMOUNT)!
+
+      const result = await burnAsset({
+        fromAddress: address,
+        amount: parsedAmount,
+        colorId,
+        mnemonic: walletData.encryptedMnemonic,
+      })
+
+      setBurnTxid(result.txid)
+      setBurnStep("success")
+      // Refresh multiple times with delays to catch API update
+      onBurnSuccess?.()
+      setTimeout(() => onBurnSuccess?.(), 2000)
+      setTimeout(() => onBurnSuccess?.(), 5000)
+    } catch (err) {
+      setBurnError(err instanceof Error ? err.message : "Burn failed")
+      setBurnStep("error")
+    }
+  }
+
+  const handleBurnCancel = () => {
+    setBurnStep("idle")
+    setBurnAmount("")
+    setBurnError(null)
   }
 
   return (
@@ -339,10 +437,151 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
           </div>
         )}
 
+        {/* Burn Section */}
+        {burnStep === "idle" && (
+          <div className="mb-3">
+            <Button
+              variant="outline"
+              fullWidth
+              onClick={handleBurnStart}
+              className="text-red-600 border-red-200 hover:bg-red-50"
+            >
+              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+              </svg>
+              {t("burn.button")}
+            </Button>
+          </div>
+        )}
+
+        {/* Burn Input Step */}
+        {burnStep === "input" && (
+          <div className="mb-3 p-4 bg-red-50 rounded-lg border border-red-200">
+            <h3 className="text-sm font-semibold text-red-800 mb-3">{t("burn.title")}</h3>
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-slate-700 mb-1">
+                {t("burn.amount")}
+              </label>
+              <Input
+                value={burnAmount}
+                onChange={(e) => setBurnAmount(e.target.value.replace(/[^0-9]/g, ""))}
+                placeholder={t("burn.amountPlaceholder")}
+                type="text"
+                inputMode="numeric"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                {t("burn.available", { amount: balance.total.toLocaleString() })}
+              </p>
+            </div>
+            {burnError && <p className="text-sm text-red-500 mb-3">{burnError}</p>}
+            <div className="flex gap-2">
+              <Button variant="outline" fullWidth onClick={handleBurnCancel}>
+                {t("common.cancel")}
+              </Button>
+              <Button fullWidth onClick={handleBurnConfirm} className="bg-red-600 hover:bg-red-700">
+                {t("common.continue")}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Burn Confirm Step */}
+        {burnStep === "confirm" && (
+          <div className="mb-3 p-4 bg-red-50 rounded-lg border border-red-200">
+            <h3 className="text-sm font-semibold text-red-800 mb-3">{t("burn.confirmTitle")}</h3>
+            <div className="p-3 bg-white rounded-lg mb-3">
+              <p className="text-xs text-slate-500">{t("burn.amount")}</p>
+              <p className="text-lg font-semibold text-slate-800">
+                {parseInt(burnAmount, 10).toLocaleString()}
+              </p>
+            </div>
+            <div className="bg-red-100 border border-red-300 rounded-lg p-3 mb-3">
+              <p className="text-sm text-red-800 font-medium">{t("burn.warning")}</p>
+              <p className="text-sm text-red-700 mt-1">{t("burn.confirmMessage")}</p>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" fullWidth onClick={() => setBurnStep("input")}>
+                {t("common.back")}
+              </Button>
+              <Button fullWidth onClick={handleBurnExecute} className="bg-red-600 hover:bg-red-700">
+                {t("burn.button")}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Burn Processing Step */}
+        {burnStep === "burning" && (
+          <div className="mb-3 p-4 bg-slate-50 rounded-lg text-center">
+            <div className="animate-spin w-10 h-10 border-4 border-red-600 border-t-transparent rounded-full mx-auto mb-3" />
+            <p className="text-slate-600">{t("burn.burning")}</p>
+          </div>
+        )}
+
+        {/* Burn Success Step */}
+        {burnStep === "success" && (
+          <div className="mb-3 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-green-800 mb-1">{t("burn.success")}</p>
+              <p className="text-sm text-green-700">
+                {t("burn.burnedSuccessfully", { amount: parseInt(burnAmount, 10).toLocaleString() })}
+              </p>
+            </div>
+            <div className="mt-3 p-3 bg-white rounded-lg space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">{t("burn.burnedAmount")}</span>
+                <span className="text-red-600 font-medium">-{parseInt(burnAmount, 10).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">{t("burn.remainingBalance")}</span>
+                <span className="text-slate-800 font-semibold">{(originalBalance - parseInt(burnAmount, 10)).toLocaleString()}</span>
+              </div>
+            </div>
+            {burnTxid && (
+              <p className="text-xs font-mono text-slate-500 break-all mt-3 text-center">TX: {burnTxid}</p>
+            )}
+            <p className="text-xs text-slate-500 mt-2 text-center">{t("burn.balanceUpdateNote")}</p>
+            <Button fullWidth onClick={() => { onBurnSuccess?.(); onClose(); }} className="mt-3">
+              {t("common.done")}
+            </Button>
+          </div>
+        )}
+
+        {/* Burn Error Step */}
+        {burnStep === "error" && (
+          <div className="mb-3 p-4 bg-red-50 rounded-lg border border-red-200">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-red-800 mb-1">{t("burn.failed")}</p>
+              <p className="text-sm text-red-600">{burnError}</p>
+            </div>
+            <div className="flex gap-2 mt-3">
+              <Button variant="outline" fullWidth onClick={handleBurnCancel}>
+                {t("common.cancel")}
+              </Button>
+              <Button fullWidth onClick={() => setBurnStep("input")}>
+                {t("common.tryAgain")}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Close Button */}
-        <Button variant="outline" fullWidth onClick={onClose}>
-          {t("common.close")}
-        </Button>
+        {burnStep === "idle" && (
+          <Button variant="outline" fullWidth onClick={onClose}>
+            {t("common.close")}
+          </Button>
+        )}
       </div>
     </div>
   )

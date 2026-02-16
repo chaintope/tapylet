@@ -126,6 +126,29 @@
     "total": "Total",
     "viewInExplorer": "View in Explorer"
   },
+  "burn": {
+    "title": "Burn Token",
+    "button": "Burn",
+    "amount": "Burn Amount",
+    "amountPlaceholder": "Enter amount to burn",
+    "available": "Available: {{amount}}",
+    "confirmTitle": "Confirm Burn",
+    "confirmMessage": "This action cannot be undone. Are you sure you want to burn?",
+    "warning": "Burned tokens will be permanently lost",
+    "burning": "Burning...",
+    "success": "Burn Complete",
+    "burnedSuccessfully": "{{amount}} burned successfully",
+    "burnedAmount": "Burned",
+    "remainingBalance": "Remaining",
+    "balanceUpdateNote": "Balance may take a moment to update",
+    "failed": "Burn Failed",
+    "errors": {
+      "amountRequired": "Please enter an amount to burn",
+      "invalidAmount": "Invalid amount",
+      "amountGreaterThanZero": "Amount must be greater than 0",
+      "insufficientBalance": "Insufficient balance"
+    }
+  },
   "settings": {
     "title": "Settings",
     "about": "About",

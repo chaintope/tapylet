@@ -126,6 +126,29 @@
     "total": "合計",
     "viewInExplorer": "エクスプローラーで表示"
   },
+  "burn": {
+    "title": "トークン焼却",
+    "button": "焼却",
+    "amount": "焼却数量",
+    "amountPlaceholder": "焼却する数量を入力",
+    "available": "保有数量: {{amount}}",
+    "confirmTitle": "焼却の確認",
+    "confirmMessage": "この操作は取り消せません。本当に焼却しますか？",
+    "warning": "焼却したトークンは永久に失われます",
+    "burning": "焼却中...",
+    "success": "焼却完了",
+    "burnedSuccessfully": "{{amount}} を焼却しました",
+    "burnedAmount": "焼却量",
+    "remainingBalance": "残り残高",
+    "balanceUpdateNote": "残高の反映には少し時間がかかる場合があります",
+    "failed": "焼却に失敗しました",
+    "errors": {
+      "amountRequired": "焼却数量を入力してください",
+      "invalidAmount": "無効な数量です",
+      "amountGreaterThanZero": "数量は0より大きい必要があります",
+      "insufficientBalance": "残高が不足しています"
+    }
+  },
   "settings": {
     "title": "設定",
     "about": "アプリ情報",
