@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Card, CardContent } from "../components/ui"
-import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions, AssetDetailModal } from "../components/wallet"
+import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions, AssetDetailModal, IssueModal } from "../components/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
+import { issuedTokenStore } from "../lib/storage/issuedTokenStore"
 import { getAllBalances, formatTpc, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, type AllBalances, type Metadata } from "../lib/api"
+import { sanitizeImageUrl } from "../lib/utils/sanitize"
 import type { AppScreen } from "../types/wallet"
 
 interface MainWalletScreenProps {
@@ -19,6 +21,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   const { t } = useTranslation()
   const [showReceiveModal, setShowReceiveModal] = useState(false)
   const [showSendModal, setShowSendModal] = useState(false)
+  const [showIssueModal, setShowIssueModal] = useState(false)
   const [showPendingModal, setShowPendingModal] = useState(false)
   const [balances, setBalances] = useState<AllBalances | null>(null)
   const [isLoadingBalance, setIsLoadingBalance] = useState(true)
@@ -57,7 +60,27 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
       // Fetch token metadata for colored coins
       if (allBal.assets.length > 0) {
         const colorIds = allBal.assets.map((a) => a.colorId)
-        getTokenMetadataBatch(colorIds).then(setTokenMetadata)
+        // Fetch both registry metadata and local issued tokens
+        const [registryMeta, issuedTokens] = await Promise.all([
+          getTokenMetadataBatch(colorIds),
+          issuedTokenStore.getAll(),
+        ])
+        // Merge: registry metadata takes priority, fall back to local
+        const mergedMeta = new Map<string, Metadata>(registryMeta)
+        for (const issued of issuedTokens) {
+          if (!mergedMeta.has(issued.colorId)) {
+            mergedMeta.set(issued.colorId, {
+              name: issued.metadata.name,
+              symbol: issued.metadata.symbol,
+              decimals: issued.metadata.decimals,
+              description: issued.metadata.description,
+              icon: issued.metadata.icon,
+              website: issued.metadata.website,
+              version: issued.metadata.version,
+            })
+          }
+        }
+        setTokenMetadata(mergedMeta)
       }
     } else {
       setBalanceError(t("wallet.failedToLoad"))
@@ -197,9 +220,9 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
                       onClick={() => setSelectedAssetColorId(asset.colorId)}
                       className="w-full flex items-center justify-between p-2 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors text-left">
                       <div className="flex items-center gap-2 min-w-0 flex-1">
-                        {meta?.icon && (
+                        {meta?.icon && sanitizeImageUrl(meta.icon) && (
                           <img
-                            src={meta.icon}
+                            src={sanitizeImageUrl(meta.icon)}
                             alt={meta.name}
                             className="w-6 h-6 rounded-full flex-shrink-0"
                           />
@@ -236,10 +259,10 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         )}
 
         {/* Actions */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <Button variant="outline" onClick={() => setShowSendModal(true)}>
             <svg
-              className="w-4 h-4 mr-2"
+              className="w-4 h-4 mr-1"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24">
@@ -254,7 +277,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
           </Button>
           <Button variant="outline" onClick={() => setShowReceiveModal(true)}>
             <svg
-              className="w-4 h-4 mr-2"
+              className="w-4 h-4 mr-1"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24">
@@ -266,6 +289,21 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
               />
             </svg>
             {t("common.receive")}
+          </Button>
+          <Button variant="outline" onClick={() => setShowIssueModal(true)}>
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            {t("common.issue")}
           </Button>
         </div>
 
@@ -326,6 +364,20 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
             timestamp: Date.now(),
             colorId,
           })
+          // Retry refreshing until API reflects the new transaction
+          for (let i = 0; i < 5; i++) {
+            await new Promise(resolve => setTimeout(resolve, 2000))
+            await refreshData()
+          }
+        }}
+      />
+
+      {/* Issue Modal */}
+      <IssueModal
+        address={address}
+        isOpen={showIssueModal}
+        onClose={() => setShowIssueModal(false)}
+        onSuccess={async () => {
           // Retry refreshing until API reflects the new transaction
           for (let i = 0; i < 5; i++) {
             await new Promise(resolve => setTimeout(resolve, 2000))

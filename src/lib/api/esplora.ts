@@ -1,4 +1,5 @@
 import * as tapyrus from "tapyrusjs-lib"
+import { validateUtxo, validateTransactionInfo, isValidAmount, MAX_AMOUNT } from "../utils/validation"
 
 const EXPLORER_API_URL = process.env.PLASMO_PUBLIC_EXPLORER_API_URL
   ?? "https://testnet-explorer.tapyrus.dev.chaintope.com/api"
@@ -90,14 +91,22 @@ export const getAddressUtxos = async (address: string): Promise<Utxo[]> => {
     throw new Error(`Failed to fetch UTXOs: ${response.status}`)
   }
   const data: UtxoResponse[] = await response.json()
-  // Map snake_case to camelCase
-  return data.map((utxo) => ({
-    txid: utxo.txid,
-    vout: utxo.vout,
-    status: utxo.status,
-    value: utxo.value,
-    colorId: utxo.color_id,
-  }))
+
+  // Validate and map snake_case to camelCase
+  const validUtxos: Utxo[] = []
+  for (const utxo of data) {
+    const mapped = {
+      txid: utxo.txid,
+      vout: utxo.vout,
+      status: utxo.status,
+      value: utxo.value,
+      colorId: utxo.color_id,
+    }
+    if (validateUtxo(mapped)) {
+      validUtxos.push(mapped)
+    }
+  }
+  return validUtxos
 }
 
 export const getBalance = async (address: string): Promise<number> => {
@@ -170,13 +179,15 @@ export const getAllBalances = async (address: string): Promise<AllBalances> => {
   const tpcBalance = balanceMap.get(TPC_COLOR_ID) ?? { confirmed: 0, unconfirmed: 0 }
   balanceMap.delete(TPC_COLOR_ID)
 
-  // Convert map to array for assets
-  const assets: AssetBalance[] = Array.from(balanceMap.entries()).map(([colorId, balance]) => ({
-    colorId,
-    confirmed: balance.confirmed,
-    unconfirmed: balance.unconfirmed,
-    total: balance.confirmed + balance.unconfirmed,
-  }))
+  // Convert map to array for assets and sort by colorId for consistent ordering
+  const assets: AssetBalance[] = Array.from(balanceMap.entries())
+    .map(([colorId, balance]) => ({
+      colorId,
+      confirmed: balance.confirmed,
+      unconfirmed: balance.unconfirmed,
+      total: balance.confirmed + balance.unconfirmed,
+    }))
+    .sort((a, b) => a.colorId.localeCompare(b.colorId))
 
   return {
     tpc: {
@@ -241,5 +252,11 @@ export const getTransactionInfo = async (txid: string): Promise<TransactionInfo>
   if (!response.ok) {
     throw new Error(`Failed to fetch transaction: ${response.status}`)
   }
-  return response.json()
+  const data = await response.json()
+
+  if (!validateTransactionInfo(data)) {
+    throw new Error("Invalid transaction info from API")
+  }
+
+  return data
 }

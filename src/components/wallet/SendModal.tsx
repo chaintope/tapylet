@@ -5,6 +5,7 @@ import { validateAddress } from "../../lib/wallet"
 import { createAndSignTransaction, createAndSignAssetTransaction } from "../../lib/wallet/transaction"
 import { parseTpc, formatTpc, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails, type Metadata } from "../../lib/api"
 import { walletStorage } from "../../lib/storage/secureStore"
+import { isValidAmount, MAX_AMOUNT, MAX_COLORED_AMOUNT } from "../../lib/utils/validation"
 
 interface SendModalProps {
   address: string
@@ -81,9 +82,19 @@ export const SendModal: React.FC<SendModalProps> = ({
         setError(t("send.errors.invalidAmount"))
         return
       }
+      // Validate TPC amount is within safe range
+      if (!isValidAmount(parsedAmount, MAX_AMOUNT)) {
+        setError(t("send.errors.invalidAmount"))
+        return
+      }
     } else {
       parsedAmount = parseInt(amount, 10)
       if (isNaN(parsedAmount)) {
+        setError(t("send.errors.invalidAmount"))
+        return
+      }
+      // Validate colored coin amount is within safe range
+      if (!isValidAmount(parsedAmount, MAX_COLORED_AMOUNT)) {
         setError(t("send.errors.invalidAmount"))
         return
       }

@@ -1,8 +1,12 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "../ui"
 import { formatColorId, getExplorerColorUrl } from "../../lib/api"
+import { issuedTokenStore, type IssuedToken } from "../../lib/storage/issuedTokenStore"
+import { sanitizeUrl, sanitizeImageUrl } from "../../lib/utils/sanitize"
 import type { AssetBalance, Metadata } from "../../lib/api"
+
+const TOKEN_REGISTRY_URL = "https://github.com/chaintope/tapyrus-token-registry/issues/new?template=register-token.yml"
 
 interface AssetDetailModalProps {
   colorId: string
@@ -21,6 +25,15 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
 }) => {
   const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [issuedToken, setIssuedToken] = useState<IssuedToken | null>(null)
+  const [showRegistryInfo, setShowRegistryInfo] = useState(false)
+
+  useEffect(() => {
+    if (isOpen && colorId) {
+      issuedTokenStore.get(colorId).then(setIssuedToken)
+    }
+  }, [isOpen, colorId])
 
   if (!isOpen) return null
 
@@ -30,6 +43,18 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
     await navigator.clipboard.writeText(colorId)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleCopy = async (text: string, field: string) => {
+    await navigator.clipboard.writeText(text)
+    setCopiedField(field)
+    setTimeout(() => setCopiedField(null), 2000)
+  }
+
+  const getMetadataJson = () => {
+    if (!issuedToken) return ""
+    const { tokenType, ...jsonMetadata } = issuedToken.metadata
+    return JSON.stringify(jsonMetadata, null, 2)
   }
 
   return (
@@ -42,9 +67,9 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2 min-w-0">
-            {metadata?.icon && (
+            {metadata?.icon && sanitizeImageUrl(metadata.icon) && (
               <img
-                src={metadata.icon}
+                src={sanitizeImageUrl(metadata.icon)}
                 alt={metadata.name}
                 className="w-8 h-8 rounded-full flex-shrink-0"
               />
@@ -92,11 +117,11 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 <span className="text-slate-800 font-medium">{metadata.version}</span>
               </div>
             )}
-            {metadata.website && (
+            {metadata.website && sanitizeUrl(metadata.website) && (
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">{t("assetDetail.website")}</span>
                 <a
-                  href={metadata.website}
+                  href={sanitizeUrl(metadata.website)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary-600 hover:text-primary-700 underline truncate ml-2"
@@ -104,6 +129,69 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                   {metadata.website.replace(/^https?:\/\//, "")}
                 </a>
               </div>
+            )}
+            {/* Issuer Info (from local issued token) */}
+            {issuedToken?.metadata.issuer && (
+              <div className="text-sm">
+                <span className="text-slate-500">{t("issue.issuerInfo")}</span>
+                <div className="mt-1 space-y-0.5">
+                  {issuedToken.metadata.issuer.name && (
+                    <p className="text-slate-800">{t("issue.issuerName")}: {issuedToken.metadata.issuer.name}</p>
+                  )}
+                  {issuedToken.metadata.issuer.url && sanitizeUrl(issuedToken.metadata.issuer.url) && (
+                    <p className="text-slate-800">
+                      <a href={sanitizeUrl(issuedToken.metadata.issuer.url)} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700 underline">
+                        {issuedToken.metadata.issuer.url.replace(/^https?:\/\//, "")}
+                      </a>
+                    </p>
+                  )}
+                  {issuedToken.metadata.issuer.email && (
+                    <p className="text-slate-800">{issuedToken.metadata.issuer.email}</p>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* NFT Metadata (from local issued token) */}
+            {issuedToken?.metadata.tokenType === "nft" && (
+              <>
+                {issuedToken.metadata.image && sanitizeImageUrl(issuedToken.metadata.image) && (
+                  <div className="text-sm">
+                    <span className="text-slate-500">{t("issue.nftImage")}</span>
+                    <div className="mt-2">
+                      <a href={sanitizeUrl(issuedToken.metadata.image)} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={sanitizeImageUrl(issuedToken.metadata.image)}
+                          alt="NFT"
+                          className="w-full max-h-48 object-contain rounded-lg bg-slate-100"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none"
+                            e.currentTarget.nextElementSibling?.classList.remove("hidden")
+                          }}
+                        />
+                        <span className="hidden text-primary-600 hover:text-primary-700 underline break-all text-xs">
+                          {issuedToken.metadata.image}
+                        </span>
+                      </a>
+                    </div>
+                  </div>
+                )}
+                {issuedToken.metadata.animation_url && sanitizeUrl(issuedToken.metadata.animation_url) && (
+                  <div className="text-sm">
+                    <span className="text-slate-500">{t("issue.nftAnimationUrl")}</span>
+                    <a href={sanitizeUrl(issuedToken.metadata.animation_url)} target="_blank" rel="noopener noreferrer" className="block text-primary-600 hover:text-primary-700 underline break-all mt-1 text-xs">
+                      {issuedToken.metadata.animation_url}
+                    </a>
+                  </div>
+                )}
+                {issuedToken.metadata.external_url && sanitizeUrl(issuedToken.metadata.external_url) && (
+                  <div className="text-sm">
+                    <span className="text-slate-500">{t("issue.nftExternalUrl")}</span>
+                    <a href={sanitizeUrl(issuedToken.metadata.external_url)} target="_blank" rel="noopener noreferrer" className="block text-primary-600 hover:text-primary-700 underline break-all mt-1 text-xs">
+                      {issuedToken.metadata.external_url}
+                    </a>
+                  </div>
+                )}
+              </>
             )}
             <div className="border-t border-slate-200 my-2" />
           </div>
@@ -161,6 +249,95 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
           </svg>
           {t("assetDetail.viewInExplorer")}
         </a>
+
+        {/* Registry Info for issued tokens */}
+        {issuedToken && (
+          <div className="mb-3">
+            <button
+              onClick={() => setShowRegistryInfo(!showRegistryInfo)}
+              className="w-full px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              {t("issue.showRegistryInfo")}
+              <svg className={`w-4 h-4 transition-transform ${showRegistryInfo ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {showRegistryInfo && (
+              <div className="mt-3 p-3 bg-slate-50 rounded-lg space-y-3">
+                <p className="text-xs text-slate-600">{t("issue.registryDescription")}</p>
+
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Network</p>
+                  <p className="text-sm font-medium text-slate-800">testnet</p>
+                </div>
+
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Color ID</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-mono text-slate-800 break-all flex-1">{colorId}</p>
+                    <button
+                      onClick={() => handleCopy(colorId, "colorId")}
+                      className="text-primary-600 hover:text-primary-700 text-xs shrink-0">
+                      {copiedField === "colorId" ? t("common.copied") : t("common.copy")}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Payment Base</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-mono text-slate-800 break-all flex-1">{issuedToken.paymentBase}</p>
+                    <button
+                      onClick={() => handleCopy(issuedToken.paymentBase, "paymentBase")}
+                      className="text-primary-600 hover:text-primary-700 text-xs shrink-0">
+                      {copiedField === "paymentBase" ? t("common.copied") : t("common.copy")}
+                    </button>
+                  </div>
+                </div>
+
+                {issuedToken.outPoint && (
+                  <div>
+                    <p className="text-xs text-slate-500 mb-1">OutPoint</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-mono text-slate-800 break-all flex-1">{issuedToken.outPoint}</p>
+                      <button
+                        onClick={() => handleCopy(issuedToken.outPoint!, "outPoint")}
+                        className="text-primary-600 hover:text-primary-700 text-xs shrink-0">
+                        {copiedField === "outPoint" ? t("common.copied") : t("common.copy")}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-xs text-slate-500 mb-1">Metadata JSON</p>
+                  <pre className="text-xs font-mono text-slate-800 whitespace-pre-wrap break-all mb-2 max-h-24 overflow-y-auto bg-white p-2 rounded border border-slate-200">
+                    {getMetadataJson()}
+                  </pre>
+                  <button
+                    onClick={() => handleCopy(getMetadataJson(), "json")}
+                    className="text-primary-600 hover:text-primary-700 text-xs">
+                    {copiedField === "json" ? t("common.copied") : t("issue.copyJson")}
+                  </button>
+                </div>
+
+                <a
+                  href={TOKEN_REGISTRY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full mt-2">
+                  <Button variant="outline" fullWidth>
+                    {t("issue.openRegistry")}
+                  </Button>
+                </a>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Close Button */}
         <Button variant="outline" fullWidth onClick={onClose}>

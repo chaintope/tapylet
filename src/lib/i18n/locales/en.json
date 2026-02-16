@@ -7,6 +7,7 @@
     "continue": "Continue",
     "send": "Send",
     "receive": "Receive",
+    "issue": "Issue",
     "tryAgain": "Try Again",
     "copy": "Copy",
     "copied": "Copied!"
@@ -130,5 +131,60 @@
     "about": "About",
     "version": "Version",
     "network": "Network"
+  },
+  "issue": {
+    "title": "Issue Asset",
+    "tokenType": "Token Type",
+    "types": {
+      "reissuable": {
+        "name": "Reissuable",
+        "description": "Can issue additional tokens with the same colorId"
+      },
+      "non_reissuable": {
+        "name": "Non-reissuable",
+        "description": "Can only issue once"
+      },
+      "nft": {
+        "name": "NFT",
+        "description": "Unique non-fungible token"
+      }
+    },
+    "name": "Token Name",
+    "namePlaceholder": "My Token",
+    "symbol": "Symbol",
+    "symbolPlaceholder": "MTK",
+    "decimals": "Decimals",
+    "description": "Description",
+    "descriptionPlaceholder": "Token description...",
+    "icon": "Icon URL",
+    "website": "Website",
+    "issuerInfo": "Issuer Info (Optional)",
+    "issuerName": "Issuer Name",
+    "issuerUrl": "Issuer URL",
+    "issuerEmail": "Issuer Email",
+    "nftMetadata": "NFT Metadata",
+    "nftImage": "Image URL",
+    "nftAnimationUrl": "Animation URL",
+    "nftExternalUrl": "External URL",
+    "amount": "Amount",
+    "amountPlaceholder": "1000000",
+    "issue": "Issue",
+    "issuing": "Issuing...",
+    "success": "Issuance Complete",
+    "registryPrompt": "To display token info in other wallets, explorers, and for other users, you need to register it with the token registry.",
+    "registryRequired": "Required for Registry",
+    "showRegistryInfo": "Show Registry Registration Info",
+    "registryInfo": "Registry Information",
+    "registryDescription": "Submit the following information via GitHub Issue:",
+    "copyJson": "Copy JSON",
+    "openRegistry": "Open Registry",
+    "errors": {
+      "nameRequired": "Please enter a token name",
+      "nameTooLong": "Token name must be 64 characters or less",
+      "symbolRequired": "Please enter a symbol",
+      "symbolTooLong": "Symbol must be 12 characters or less",
+      "amountRequired": "Please enter an amount",
+      "invalidAmount": "Invalid amount"
+    }
   }
 }
