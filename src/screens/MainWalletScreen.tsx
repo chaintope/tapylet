@@ -5,7 +5,7 @@ import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions, AssetDeta
 import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
 import { issuedTokenStore } from "../lib/storage/issuedTokenStore"
-import { getAllBalances, formatTpc, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, type AllBalances, type Metadata } from "../lib/api"
+import { getAllBalances, formatTpc, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "../lib/api"
 import { sanitizeImageUrl } from "../lib/utils/sanitize"
 import type { AppScreen } from "../types/wallet"
 
@@ -69,15 +69,7 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
         const mergedMeta = new Map<string, Metadata>(registryMeta)
         for (const issued of issuedTokens) {
           if (!mergedMeta.has(issued.colorId)) {
-            mergedMeta.set(issued.colorId, {
-              name: issued.metadata.name,
-              symbol: issued.metadata.symbol,
-              decimals: issued.metadata.decimals,
-              description: issued.metadata.description,
-              icon: issued.metadata.icon,
-              website: issued.metadata.website,
-              version: issued.metadata.version,
-            })
+            mergedMeta.set(issued.colorId, new Metadata(issued.metadata))
           }
         }
         setTokenMetadata(mergedMeta)

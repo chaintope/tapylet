@@ -66,6 +66,13 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
 
   const displayName = metadata?.name ?? formatColorId(colorId)
 
+  // Resolve NFT fields: prefer issuedToken (local), fall back to registry metadata
+  const issuer = issuedToken?.metadata.issuer ?? metadata?.issuer
+  const isNft = issuedToken?.metadata.tokenType === "nft" || metadata?.tokenType === "nft"
+  const nftImage = issuedToken?.metadata.image ?? metadata?.image
+  const nftAnimationUrl = issuedToken?.metadata.animation_url ?? metadata?.animation_url
+  const nftExternalUrl = issuedToken?.metadata.external_url ?? metadata?.external_url
+
   const handleCopyColorId = async () => {
     await navigator.clipboard.writeText(colorId)
     setCopied(true)
@@ -165,10 +172,10 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2 min-w-0">
-            {metadata?.icon && sanitizeImageUrl(metadata.icon) && (
+            {(metadata?.icon || (isNft && nftImage)) && sanitizeImageUrl(metadata?.icon ?? nftImage) && (
               <img
-                src={sanitizeImageUrl(metadata.icon)}
-                alt={metadata.name}
+                src={sanitizeImageUrl(metadata?.icon ?? nftImage)}
+                alt={metadata?.name ?? "NFT"}
                 className="w-8 h-8 rounded-full flex-shrink-0"
               />
             )}
@@ -228,37 +235,37 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                 </a>
               </div>
             )}
-            {/* Issuer Info (from local issued token) */}
-            {issuedToken?.metadata.issuer && (
+            {/* Issuer Info */}
+            {issuer && (
               <div className="text-sm">
                 <span className="text-slate-500">{t("issue.issuerInfo")}</span>
                 <div className="mt-1 space-y-0.5">
-                  {issuedToken.metadata.issuer.name && (
-                    <p className="text-slate-800">{t("issue.issuerName")}: {issuedToken.metadata.issuer.name}</p>
+                  {issuer.name && (
+                    <p className="text-slate-800">{t("issue.issuerName")}: {issuer.name}</p>
                   )}
-                  {issuedToken.metadata.issuer.url && sanitizeUrl(issuedToken.metadata.issuer.url) && (
+                  {issuer.url && sanitizeUrl(issuer.url) && (
                     <p className="text-slate-800">
-                      <a href={sanitizeUrl(issuedToken.metadata.issuer.url)} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700 underline">
-                        {issuedToken.metadata.issuer.url.replace(/^https?:\/\//, "")}
+                      <a href={sanitizeUrl(issuer.url)} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700 underline">
+                        {issuer.url.replace(/^https?:\/\//, "")}
                       </a>
                     </p>
                   )}
-                  {issuedToken.metadata.issuer.email && (
-                    <p className="text-slate-800">{issuedToken.metadata.issuer.email}</p>
+                  {issuer.email && (
+                    <p className="text-slate-800">{issuer.email}</p>
                   )}
                 </div>
               </div>
             )}
-            {/* NFT Metadata (from local issued token) */}
-            {issuedToken?.metadata.tokenType === "nft" && (
+            {/* NFT Metadata */}
+            {isNft && (
               <>
-                {issuedToken.metadata.image && sanitizeImageUrl(issuedToken.metadata.image) && (
+                {nftImage && sanitizeImageUrl(nftImage) && (
                   <div className="text-sm">
                     <span className="text-slate-500">{t("issue.nftImage")}</span>
                     <div className="mt-2">
-                      <a href={sanitizeUrl(issuedToken.metadata.image)} target="_blank" rel="noopener noreferrer">
+                      <a href={sanitizeUrl(nftImage)} target="_blank" rel="noopener noreferrer">
                         <img
-                          src={sanitizeImageUrl(issuedToken.metadata.image)}
+                          src={sanitizeImageUrl(nftImage)}
                           alt="NFT"
                           className="w-full max-h-48 object-contain rounded-lg bg-slate-100"
                           onError={(e) => {
@@ -267,25 +274,25 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
                           }}
                         />
                         <span className="hidden text-primary-600 hover:text-primary-700 underline break-all text-xs">
-                          {issuedToken.metadata.image}
+                          {nftImage}
                         </span>
                       </a>
                     </div>
                   </div>
                 )}
-                {issuedToken.metadata.animation_url && sanitizeUrl(issuedToken.metadata.animation_url) && (
+                {nftAnimationUrl && sanitizeUrl(nftAnimationUrl) && (
                   <div className="text-sm">
                     <span className="text-slate-500">{t("issue.nftAnimationUrl")}</span>
-                    <a href={sanitizeUrl(issuedToken.metadata.animation_url)} target="_blank" rel="noopener noreferrer" className="block text-primary-600 hover:text-primary-700 underline break-all mt-1 text-xs">
-                      {issuedToken.metadata.animation_url}
+                    <a href={sanitizeUrl(nftAnimationUrl)} target="_blank" rel="noopener noreferrer" className="block text-primary-600 hover:text-primary-700 underline break-all mt-1 text-xs">
+                      {nftAnimationUrl}
                     </a>
                   </div>
                 )}
-                {issuedToken.metadata.external_url && sanitizeUrl(issuedToken.metadata.external_url) && (
+                {nftExternalUrl && sanitizeUrl(nftExternalUrl) && (
                   <div className="text-sm">
                     <span className="text-slate-500">{t("issue.nftExternalUrl")}</span>
-                    <a href={sanitizeUrl(issuedToken.metadata.external_url)} target="_blank" rel="noopener noreferrer" className="block text-primary-600 hover:text-primary-700 underline break-all mt-1 text-xs">
-                      {issuedToken.metadata.external_url}
+                    <a href={sanitizeUrl(nftExternalUrl)} target="_blank" rel="noopener noreferrer" className="block text-primary-600 hover:text-primary-700 underline break-all mt-1 text-xs">
+                      {nftExternalUrl}
                     </a>
                   </div>
                 )}

@@ -238,7 +238,7 @@ export const IssueModal: React.FC<IssueModalProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-slate-800">
-              {step === "registry" ? t("issue.registryInfo") : t("issue.title")}
+              {t("issue.title")}
             </h2>
             <button
               onClick={handleClose}

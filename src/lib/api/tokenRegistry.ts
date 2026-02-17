@@ -1,6 +1,6 @@
 import { Metadata, NetworkId } from "tapyrusjs-lib"
 
-export type { Metadata }
+export { Metadata }
 
 const NETWORK_ID_STR = process.env.PLASMO_PUBLIC_NETWORK_ID ?? "1939510133"
 const networkId = Number(NETWORK_ID_STR) as NetworkId
