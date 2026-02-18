@@ -29,7 +29,7 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-i18next": "^16.5.3",
-    "tapyrusjs-lib": "^0.7.2"
+    "tapyrusjs-lib": "^0.7.3"
   },
   "devDependencies": {
     "@babel/core": "^7.28.6",

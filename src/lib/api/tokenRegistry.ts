@@ -12,9 +12,9 @@ export const getTokenMetadata = async (colorId: string): Promise<Metadata | null
   if (metadataCache.has(colorId)) return metadataCache.get(colorId)!
 
   try {
-    const metadata = await Metadata.fetch(colorId, networkId)
-    metadataCache.set(colorId, metadata)
-    return metadata
+    const entry = await Metadata.fetch(colorId, networkId)
+    metadataCache.set(colorId, entry.metadata)
+    return entry.metadata
   } catch {
     metadataCache.set(colorId, null)
     return null
