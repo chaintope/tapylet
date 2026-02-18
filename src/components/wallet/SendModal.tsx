@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
 import { validateAddress } from "../../lib/wallet"
 import { createAndSignTransaction, createAndSignAssetTransaction } from "../../lib/wallet/transaction"
-import { parseTpc, formatTpc, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails, type Metadata } from "../../lib/api"
+import { parseTpc, formatTpc, formatTokenAmount, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails, type Metadata } from "../../lib/api"
 import { walletStorage } from "../../lib/storage/secureStore"
-import { isValidAmount, MAX_AMOUNT, MAX_COLORED_AMOUNT } from "../../lib/utils/validation"
+import { isValidAmount, parseAndValidateAmount, MAX_AMOUNT, MAX_COLORED_AMOUNT } from "../../lib/utils/validation"
 
 interface SendModalProps {
   address: string
@@ -38,6 +38,8 @@ export const SendModal: React.FC<SendModalProps> = ({
 
   const isTpc = selectedColorId === TPC_COLOR_ID
   const selectedAsset = assets.find(a => a.colorId === selectedColorId)
+  const selectedMeta = tokenMetadata.get(selectedColorId)
+  const selectedDecimals = selectedMeta?.decimals
   const availableBalance = isTpc ? tpcBalance.total : (selectedAsset?.total ?? 0)
 
   const resetState = () => {
@@ -88,16 +90,12 @@ export const SendModal: React.FC<SendModalProps> = ({
         return
       }
     } else {
-      parsedAmount = parseInt(amount, 10)
-      if (isNaN(parsedAmount)) {
+      const parsed = parseAndValidateAmount(amount, MAX_COLORED_AMOUNT, selectedDecimals)
+      if (parsed === null) {
         setError(t("send.errors.invalidAmount"))
         return
       }
-      // Validate colored coin amount is within safe range
-      if (!isValidAmount(parsedAmount, MAX_COLORED_AMOUNT)) {
-        setError(t("send.errors.invalidAmount"))
-        return
-      }
+      parsedAmount = parsed
     }
 
     if (parsedAmount <= 0) {
@@ -135,7 +133,7 @@ export const SendModal: React.FC<SendModalProps> = ({
           mnemonic: walletData.encryptedMnemonic,
         })
       } else {
-        sendAmount = parseInt(amount, 10)
+        sendAmount = parseAndValidateAmount(amount, MAX_COLORED_AMOUNT, selectedDecimals)!
         result = await createAndSignAssetTransaction({
           fromAddress: address,
           toAddress: toAddress.trim(),
@@ -233,7 +231,7 @@ export const SendModal: React.FC<SendModalProps> = ({
                 </label>
                 <Input
                   type="number"
-                  step={isTpc ? "0.00000001" : "1"}
+                  step={isTpc ? "0.00000001" : selectedDecimals ? String(Math.pow(10, -selectedDecimals)) : "1"}
                   min="0"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
@@ -242,8 +240,13 @@ export const SendModal: React.FC<SendModalProps> = ({
                 <p className="text-xs text-slate-500 mt-1">
                   {isTpc
                     ? t("send.available", { amount: formatTpc(availableBalance) })
-                    : t("send.availableAsset", { amount: availableBalance.toLocaleString() })}
+                    : t("send.availableAsset", { amount: formatTokenAmount(availableBalance, selectedDecimals) })}
                 </p>
+                {!isTpc && selectedDecimals ? (
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {t("common.decimalHint", { decimals: selectedDecimals })}
+                  </p>
+                ) : null}
               </div>
             </div>
 
@@ -292,7 +295,7 @@ export const SendModal: React.FC<SendModalProps> = ({
               <div>
                 <p className="text-xs text-slate-500">{isTpc ? t("send.amount") : t("send.assetAmount")}</p>
                 <p className="text-lg font-semibold">
-                  {isTpc ? `${amount} TPC` : `${parseInt(amount, 10).toLocaleString()}`}
+                  {isTpc ? `${amount} TPC` : parseFloat(amount).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -344,7 +347,7 @@ export const SendModal: React.FC<SendModalProps> = ({
               <p className="text-sm text-slate-500 mb-4">
                 {isTpc
                   ? t("send.sentSuccessfully", { amount })
-                  : t("send.assetSentSuccessfully", { amount: parseInt(amount, 10).toLocaleString() })}
+                  : t("send.assetSentSuccessfully", { amount: parseFloat(amount).toLocaleString() })}
               </p>
               {txid && (
                 <p className="text-xs font-mono text-slate-400 break-all px-4">

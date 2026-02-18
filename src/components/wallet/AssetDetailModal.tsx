@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
-import { formatColorId, getExplorerColorUrl } from "../../lib/api"
+import { formatColorId, formatTokenAmount, getExplorerColorUrl } from "../../lib/api"
 import { issuedTokenStore, type IssuedToken } from "../../lib/storage/issuedTokenStore"
 import { sanitizeUrl, sanitizeImageUrl } from "../../lib/utils/sanitize"
 import { burnAsset } from "../../lib/wallet/transaction"
@@ -106,7 +106,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
       return
     }
 
-    const parsedAmount = parseAndValidateAmount(burnAmount, MAX_COLORED_AMOUNT)
+    const parsedAmount = parseAndValidateAmount(burnAmount, MAX_COLORED_AMOUNT, metadata?.decimals)
     if (parsedAmount === null) {
       setBurnError(t("burn.errors.invalidAmount"))
       return
@@ -135,7 +135,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
         throw new Error("Wallet not found")
       }
 
-      const parsedAmount = parseAndValidateAmount(burnAmount, MAX_COLORED_AMOUNT)!
+      const parsedAmount = parseAndValidateAmount(burnAmount, MAX_COLORED_AMOUNT, metadata?.decimals)!
 
       const result = await burnAsset({
         fromAddress: address,
@@ -308,17 +308,17 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
           <div className="p-3 bg-slate-50 rounded-lg space-y-1">
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">{t("assetDetail.total")}</span>
-              <span className="text-slate-800 font-semibold">{balance.total.toLocaleString()}</span>
+              <span className="text-slate-800 font-semibold">{formatTokenAmount(balance.total, metadata?.decimals)}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-slate-500">{t("wallet.confirmed")}</span>
-              <span className="text-slate-800">{balance.confirmed.toLocaleString()}</span>
+              <span className="text-slate-800">{formatTokenAmount(balance.confirmed, metadata?.decimals)}</span>
             </div>
             {balance.unconfirmed !== 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">{t("wallet.unconfirmed")}</span>
                 <span className="text-slate-800">
-                  {balance.unconfirmed >= 0 ? "+" : ""}{balance.unconfirmed.toLocaleString()}
+                  {balance.unconfirmed >= 0 ? "+" : ""}{formatTokenAmount(balance.unconfirmed, metadata?.decimals)}
                 </span>
               </div>
             )}
@@ -472,14 +472,19 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
               </label>
               <Input
                 value={burnAmount}
-                onChange={(e) => setBurnAmount(e.target.value.replace(/[^0-9]/g, ""))}
+                onChange={(e) => setBurnAmount(e.target.value.replace(metadata?.decimals ? /[^0-9.]/g : /[^0-9]/g, ""))}
                 placeholder={t("burn.amountPlaceholder")}
                 type="text"
-                inputMode="numeric"
+                inputMode={metadata?.decimals ? "decimal" : "numeric"}
               />
               <p className="text-xs text-slate-500 mt-1">
-                {t("burn.available", { amount: balance.total.toLocaleString() })}
+                {t("burn.available", { amount: formatTokenAmount(balance.total, metadata?.decimals) })}
               </p>
+              {metadata?.decimals ? (
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {t("common.decimalHint", { decimals: metadata.decimals })}
+                </p>
+              ) : null}
             </div>
             {burnError && <p className="text-sm text-red-500 mb-3">{burnError}</p>}
             <div className="flex gap-2">
@@ -500,7 +505,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
             <div className="p-3 bg-white rounded-lg mb-3">
               <p className="text-xs text-slate-500">{t("burn.amount")}</p>
               <p className="text-lg font-semibold text-slate-800">
-                {parseInt(burnAmount, 10).toLocaleString()}
+                {parseFloat(burnAmount).toLocaleString()}
               </p>
             </div>
             <div className="bg-red-100 border border-red-300 rounded-lg p-3 mb-3">
@@ -537,17 +542,17 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
               </div>
               <p className="text-sm font-semibold text-green-800 mb-1">{t("burn.success")}</p>
               <p className="text-sm text-green-700">
-                {t("burn.burnedSuccessfully", { amount: parseInt(burnAmount, 10).toLocaleString() })}
+                {t("burn.burnedSuccessfully", { amount: parseFloat(burnAmount).toLocaleString() })}
               </p>
             </div>
             <div className="mt-3 p-3 bg-white rounded-lg space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">{t("burn.burnedAmount")}</span>
-                <span className="text-red-600 font-medium">-{parseInt(burnAmount, 10).toLocaleString()}</span>
+                <span className="text-red-600 font-medium">-{parseFloat(burnAmount).toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-500">{t("burn.remainingBalance")}</span>
-                <span className="text-slate-800 font-semibold">{(originalBalance - parseInt(burnAmount, 10)).toLocaleString()}</span>
+                <span className="text-slate-800 font-semibold">{formatTokenAmount(originalBalance - (parseAndValidateAmount(burnAmount, MAX_COLORED_AMOUNT, metadata?.decimals) ?? 0), metadata?.decimals)}</span>
               </div>
             </div>
             {burnTxid && (

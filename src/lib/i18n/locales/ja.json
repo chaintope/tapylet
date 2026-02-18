@@ -10,7 +10,8 @@
     "issue": "発行",
     "tryAgain": "再試行",
     "copy": "コピー",
-    "copied": "コピーしました"
+    "copied": "コピーしました",
+    "decimalHint": "小数点第{{decimals}}位まで入力可能"
   },
   "wallet": {
     "title": "Tapylet",

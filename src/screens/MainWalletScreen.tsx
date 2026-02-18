@@ -5,7 +5,7 @@ import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions, AssetDeta
 import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
 import { issuedTokenStore } from "../lib/storage/issuedTokenStore"
-import { getAllBalances, formatTpc, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "../lib/api"
+import { getAllBalances, formatTpc, formatTokenAmount, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "../lib/api"
 import { sanitizeImageUrl } from "../lib/utils/sanitize"
 import type { AppScreen } from "../types/wallet"
 
@@ -234,11 +234,11 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
                       </div>
                       <div className="text-right flex-shrink-0 ml-2">
                         <span className="text-sm font-semibold text-slate-800">
-                          {asset.total.toLocaleString()}
+                          {formatTokenAmount(asset.total, meta?.decimals)}
                         </span>
                         {asset.unconfirmed !== 0 && asset.confirmed !== 0 && (
                           <span className="text-xs text-slate-500 ml-1">
-                            ({asset.unconfirmed >= 0 ? "+" : ""}{asset.unconfirmed})
+                            ({asset.unconfirmed >= 0 ? "+" : ""}{formatTokenAmount(asset.unconfirmed, meta?.decimals)})
                           </span>
                         )}
                       </div>

@@ -1,7 +1,7 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 import type { PendingTransaction } from "../../lib/storage/pendingTxStore"
-import { formatTpc, getExplorerTxUrl, formatColorId, getExplorerColorUrl, type Metadata } from "../../lib/api"
+import { formatTpc, formatTokenAmount, getExplorerTxUrl, formatColorId, getExplorerColorUrl, type Metadata } from "../../lib/api"
 
 interface PendingTransactionsProps {
   transactions: PendingTransaction[]
@@ -73,7 +73,7 @@ export const PendingTransactions: React.FC<PendingTransactionsProps> = ({
                     </span>
                     <span className="text-sm font-semibold text-slate-800">
                       {tx.colorId
-                        ? `-${tx.amount.toLocaleString()}`
+                        ? `-${formatTokenAmount(tx.amount, tokenMetadata.get(tx.colorId)?.decimals)}`
                         : `-${formatTpc(tx.amount)} TPC`}
                     </span>
                   </div>

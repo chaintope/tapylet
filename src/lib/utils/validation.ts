@@ -100,16 +100,33 @@ export const validateTransactionInfo = (info: RawTransactionInfo): boolean => {
 }
 
 /**
- * Parse and validate amount string, returning validated integer or null
+ * Parse and validate amount string, returning validated integer (in smallest unit) or null.
+ * When decimals is provided, accepts decimal input (e.g. "10.5" with decimals=2 → 1050).
  */
 export const parseAndValidateAmount = (
   amountStr: string,
-  max: number = MAX_COLORED_AMOUNT
+  max: number = MAX_COLORED_AMOUNT,
+  decimals?: number
 ): number | null => {
   const trimmed = amountStr.trim()
   if (!trimmed) return null
 
-  // Only allow digits
+  if (decimals && decimals > 0) {
+    // Allow digits with optional decimal point
+    if (!/^\d+(\.\d+)?$/.test(trimmed)) return null
+
+    const parts = trimmed.split(".")
+    const fracDigits = parts[1]?.length ?? 0
+    if (fracDigits > decimals) return null
+
+    const multiplier = Math.pow(10, decimals)
+    const parsed = Math.round(parseFloat(trimmed) * multiplier)
+
+    if (!isValidAmount(parsed, max)) return null
+    return parsed
+  }
+
+  // No decimals: only allow digits
   if (!/^\d+$/.test(trimmed)) return null
 
   const parsed = parseInt(trimmed, 10)

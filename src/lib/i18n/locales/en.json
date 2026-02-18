@@ -10,7 +10,8 @@
     "issue": "Issue",
     "tryAgain": "Try Again",
     "copy": "Copy",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "decimalHint": "Up to {{decimals}} decimal places"
   },
   "wallet": {
     "title": "Tapylet",

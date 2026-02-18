@@ -204,6 +204,15 @@ export const formatColorId = (colorId: string): string => {
   return `${colorId.slice(0, 8)}...${colorId.slice(-8)}`
 }
 
+export const formatTokenAmount = (amount: number, decimals?: number): string => {
+  if (!decimals) return amount.toLocaleString()
+  const value = amount / Math.pow(10, decimals)
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  })
+}
+
 export const formatTpc = (tapyrus: number): string => {
   const tpc = tapyrus / 100000000
   return tpc.toLocaleString(undefined, {
