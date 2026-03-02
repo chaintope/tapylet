@@ -1,4 +1,5 @@
 import { createAndSignTransaction, createAndSignAssetTransaction, burnAsset } from '../../../src/lib/wallet/transaction'
+import * as tapyrus from 'tapyrusjs-lib'
 import * as esplora from '../../../src/lib/api/esplora'
 import * as hdwallet from '../../../src/lib/wallet/hdwallet'
 import { TEST_MNEMONIC, TEST_ADDRESS, TEST_RECIPIENT, mockKeyPairWithNetwork } from '../../helpers/mockWallet'
@@ -161,6 +162,60 @@ describe('transaction', () => {
         mnemonic: testMnemonic,
       })).rejects.toThrow('Insufficient asset balance')
     })
+
+    it('should include recipient colored output in transaction', async () => {
+      const result = await createAndSignAssetTransaction({
+        fromAddress: testAddress,
+        toAddress: testRecipient,
+        amount: 500,
+        colorId: testColorId,
+        mnemonic: testMnemonic,
+      })
+
+      const tx = tapyrus.Transaction.fromHex(result.txHex)
+      const colorIdBuffer = Buffer.from(testColorId, 'hex')
+
+      // Find colored outputs (cp2pkh script: 0x21 + colorId(33) + 0xbc + p2pkh)
+      const coloredOutputs = tx.outs.filter(out => {
+        return out.script.length > 34 &&
+          out.script[0] === 0x21 && // Push 33 bytes
+          out.script.subarray(1, 34).equals(colorIdBuffer)
+      })
+
+      // Should have at least 1 colored output (recipient)
+      expect(coloredOutputs.length).toBeGreaterThanOrEqual(1)
+
+      // Recipient output should have the transfer amount
+      const recipientOutput = coloredOutputs.find(out => out.value === 500)
+      expect(recipientOutput).toBeDefined()
+    })
+
+    it('should include asset change output when amount is less than total', async () => {
+      const result = await createAndSignAssetTransaction({
+        fromAddress: testAddress,
+        toAddress: testRecipient,
+        amount: 300, // Less than 1000, so 700 change
+        colorId: testColorId,
+        mnemonic: testMnemonic,
+      })
+
+      const tx = tapyrus.Transaction.fromHex(result.txHex)
+      const colorIdBuffer = Buffer.from(testColorId, 'hex')
+
+      // Find colored outputs
+      const coloredOutputs = tx.outs.filter(out => {
+        return out.script.length > 34 &&
+          out.script[0] === 0x21 &&
+          out.script.subarray(1, 34).equals(colorIdBuffer)
+      })
+
+      // Should have 2 colored outputs (recipient + change)
+      expect(coloredOutputs.length).toBe(2)
+
+      // Should have recipient (300) and change (700)
+      const values = coloredOutputs.map(out => out.value).sort((a, b) => a - b)
+      expect(values).toEqual([300, 700])
+    })
   })
 
   describe('burnAsset', () => {
@@ -233,6 +288,92 @@ describe('transaction', () => {
         colorId: testColorId,
         mnemonic: testMnemonic,
       })).rejects.toThrow('Insufficient asset balance')
+    })
+
+    it('should NOT include burned amount in outputs', async () => {
+      const result = await burnAsset({
+        fromAddress: testAddress,
+        amount: 500, // Burn 500, change 500
+        colorId: testColorId,
+        mnemonic: testMnemonic,
+      })
+
+      const tx = tapyrus.Transaction.fromHex(result.txHex)
+      const colorIdBuffer = Buffer.from(testColorId, 'hex')
+
+      // Find colored outputs (cp2pkh script: 0x21 + colorId(33) + 0xbc + p2pkh)
+      const coloredOutputs = tx.outs.filter(out => {
+        return out.script.length > 34 &&
+          out.script[0] === 0x21 &&
+          out.script.subarray(1, 34).equals(colorIdBuffer)
+      })
+
+      // Should have only 1 colored output (change), not 2 (no recipient)
+      expect(coloredOutputs.length).toBe(1)
+
+      // Change output should be 500 (1000 - 500 burned)
+      expect(coloredOutputs[0].value).toBe(500)
+    })
+
+    it('should have no colored outputs when burning all tokens', async () => {
+      const result = await burnAsset({
+        fromAddress: testAddress,
+        amount: 1000, // Burn all
+        colorId: testColorId,
+        mnemonic: testMnemonic,
+      })
+
+      const tx = tapyrus.Transaction.fromHex(result.txHex)
+      const colorIdBuffer = Buffer.from(testColorId, 'hex')
+
+      // Find colored outputs
+      const coloredOutputs = tx.outs.filter(out => {
+        return out.script.length > 34 &&
+          out.script[0] === 0x21 &&
+          out.script.subarray(1, 34).equals(colorIdBuffer)
+      })
+
+      // Should have no colored outputs (all burned)
+      expect(coloredOutputs.length).toBe(0)
+
+      // Should still have TPC change output
+      expect(tx.outs.length).toBeGreaterThanOrEqual(1)
+    })
+
+    it('should have different output count than transfer for same amount', async () => {
+      // Transfer 500 (with 500 change)
+      const transferResult = await createAndSignAssetTransaction({
+        fromAddress: testAddress,
+        toAddress: testRecipient,
+        amount: 500,
+        colorId: testColorId,
+        mnemonic: testMnemonic,
+      })
+
+      // Burn 500 (with 500 change)
+      const burnResult = await burnAsset({
+        fromAddress: testAddress,
+        amount: 500,
+        colorId: testColorId,
+        mnemonic: testMnemonic,
+      })
+
+      const transferTx = tapyrus.Transaction.fromHex(transferResult.txHex)
+      const burnTx = tapyrus.Transaction.fromHex(burnResult.txHex)
+      const colorIdBuffer = Buffer.from(testColorId, 'hex')
+
+      const countColoredOutputs = (tx: tapyrus.Transaction) =>
+        tx.outs.filter(out =>
+          out.script.length > 34 &&
+          out.script[0] === 0x21 &&
+          out.script.subarray(1, 34).equals(colorIdBuffer)
+        ).length
+
+      // Transfer has 2 colored outputs (recipient + change)
+      expect(countColoredOutputs(transferTx)).toBe(2)
+
+      // Burn has 1 colored output (change only)
+      expect(countColoredOutputs(burnTx)).toBe(1)
     })
   })
 })
