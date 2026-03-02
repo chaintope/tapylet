@@ -115,8 +115,10 @@ export const issueToken = async (options: IssueOptions): Promise<IssueResult> =>
     throw new Error("No TPC UTXOs available")
   }
 
+  // All token types require two transactions:
+  // 1. Send TPC to P2C address
+  // 2. Spend that P2C output to issue the token
   if (tokenType === "reissuable") {
-    // c1: Single transaction - colorId is derived from P2C public key
     return issueReissuableToken(
       tpcUtxos,
       keyPair,
@@ -129,9 +131,6 @@ export const issueToken = async (options: IssueOptions): Promise<IssueResult> =>
       network
     )
   } else {
-    // c2/c3: Two transactions required
-    // 1. Send TPC to P2C address
-    // 2. Spend that P2C output to issue the token
     return issueNonReissuableToken(
       tpcUtxos,
       keyPair,
@@ -147,7 +146,7 @@ export const issueToken = async (options: IssueOptions): Promise<IssueResult> =>
   }
 }
 
-// c1: Reissuable token - single transaction
+// c1: Reissuable token - two transactions (P2C funding + issue)
 const issueReissuableToken = async (
   tpcUtxos: Utxo[],
   keyPair: tapyrus.ECPairInterface,
@@ -159,17 +158,71 @@ const issueReissuableToken = async (
   feeRate: number,
   network: tapyrus.Network
 ): Promise<IssueResult> => {
+  // For c1, colorId is derived from P2C public key (not OutPoint)
   const colorId = metadata.deriveColorId(publicKey)
   const colorIdHex = colorId.toString("hex")
 
-  const selection = selectUtxosForIssuance(tpcUtxos, 0, feeRate)
-  const { selectedUtxos, totalInput, fee } = selection
+  // Step 1: Create P2C address and send TPC to it
+  const p2cPayment = tapyrus.payments.p2pkh({
+    pubkey: p2cPublicKey,
+    network,
+  })
+  const p2cAddress = p2cPayment.address!
 
-  const txb = new tapyrus.TransactionBuilder(network)
-  txb.setVersion(1)
+  // Amount to send to P2C address (dust threshold)
+  const p2cAmount = DUST_THRESHOLD
+
+  // Estimate fees for both transactions
+  // Tx1: 1 input, 2 outputs (P2C + change)
+  const tx1EstimatedSize = 10 + 148 + 34 * 2
+  const tx1Fee = tx1EstimatedSize * feeRate
+
+  // Tx2: 1 P2C input + additional inputs for fee, 2 outputs (colored + change)
+  const tx2EstimatedSize = 10 + 148 * 2 + 34 * 2
+  const tx2Fee = tx2EstimatedSize * feeRate
+
+  // Total needed: P2C amount + both fees
+  const totalNeeded = p2cAmount + tx1Fee + tx2Fee
+
+  const selection = selectUtxosForIssuance(tpcUtxos, totalNeeded, feeRate)
+  const { selectedUtxos, totalInput } = selection
+
+  // --- Transaction 1: Send to P2C address ---
+  const txb1 = new tapyrus.TransactionBuilder(network)
+  txb1.setVersion(1)
 
   for (const utxo of selectedUtxos) {
-    txb.addInput(utxo.txid, utxo.vout)
+    txb1.addInput(utxo.txid, utxo.vout)
+  }
+
+  // P2C output
+  txb1.addOutput(p2cAddress, p2cAmount)
+
+  // Change output (need to reserve for tx2 fee)
+  const tx1Change = totalInput - p2cAmount - tx1Fee
+  if (tx1Change >= DUST_THRESHOLD) {
+    txb1.addOutput(fromAddress, tx1Change)
+  }
+
+  for (let i = 0; i < selectedUtxos.length; i++) {
+    txb1.sign({ prevOutScriptType: "p2pkh", vin: i, keyPair })
+  }
+
+  const tx1 = txb1.build()
+  const tx1id = await broadcastTransaction(tx1.toHex())
+
+  // --- Transaction 2: Issue token from P2C output ---
+  const txb2 = new tapyrus.TransactionBuilder(network)
+  txb2.setVersion(1)
+
+  // Input 0: P2C output from tx1
+  txb2.addInput(tx1id, 0)
+
+  // Input 1: Change from tx1 for fee (if available)
+  let tx2InputTotal = p2cAmount
+  if (tx1Change >= DUST_THRESHOLD) {
+    txb2.addInput(tx1id, 1)
+    tx2InputTotal += tx1Change
   }
 
   // Colored output
@@ -179,23 +232,43 @@ const issueReissuableToken = async (
     hash: fromAddressDecoded.hash,
     network,
   }).output!
-  txb.addOutput(coloredScript, amount)
+  txb2.addOutput(coloredScript, amount)
 
   // Change output
-  const change = totalInput - fee
-  if (change >= DUST_THRESHOLD) {
-    txb.addOutput(fromAddress, change)
+  const tx2Change = tx2InputTotal - tx2Fee
+  if (tx2Change >= DUST_THRESHOLD) {
+    txb2.addOutput(fromAddress, tx2Change)
   }
 
-  for (let i = 0; i < selectedUtxos.length; i++) {
-    txb.sign({ prevOutScriptType: "p2pkh", vin: i, keyPair })
+  // Derive P2C private key: p2cPrivateKey = privateKey + commitment
+  const commitment = metadata.commitment(publicKey)
+  const p2cPrivateKeyBytes = ecc.privateAdd(keyPair.privateKey!, commitment)
+  if (!p2cPrivateKeyBytes) {
+    throw new Error("Failed to derive P2C private key")
+  }
+  const p2cKeyPair = tapyrus.ECPair.fromPrivateKey(Buffer.from(p2cPrivateKeyBytes), { network })
+
+  // Sign P2C input (index 0) with P2C keyPair
+  txb2.sign({
+    prevOutScriptType: "p2pkh",
+    vin: 0,
+    keyPair: p2cKeyPair,
+  })
+
+  // Sign change input (if present) with normal keyPair
+  if (tx1Change >= DUST_THRESHOLD) {
+    txb2.sign({
+      prevOutScriptType: "p2pkh",
+      vin: 1,
+      keyPair,
+    })
   }
 
-  const tx = txb.build()
-  const txid = await broadcastTransaction(tx.toHex())
+  const tx2 = txb2.build()
+  const tx2id = await broadcastTransaction(tx2.toHex())
 
   return {
-    txid,
+    txid: tx2id,
     colorId: colorIdHex,
     paymentBase: publicKey.toString("hex"),
   }

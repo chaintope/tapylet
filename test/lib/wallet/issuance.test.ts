@@ -71,11 +71,11 @@ describe('issuance', () => {
       expect(result.colorId).toMatch(/^c1/) // Reissuable colorId starts with c1
       expect(result.paymentBase).toBeDefined()
       expect(result.outPoint).toBeUndefined() // No outPoint for c1
-      // Only 1 broadcast for c1
-      expect(mockedEsplora.broadcastTransaction).toHaveBeenCalledTimes(1)
+      // 2 broadcasts for c1 (P2C tx + issue tx)
+      expect(mockedEsplora.broadcastTransaction).toHaveBeenCalledTimes(2)
     })
 
-    it('should create only one transaction for reissuable token', async () => {
+    it('should create two transactions for reissuable token: P2C funding tx and issue tx', async () => {
       const broadcastCalls: string[] = []
       mockedEsplora.broadcastTransaction.mockImplementation(async (txHex) => {
         broadcastCalls.push(txHex)
@@ -90,11 +90,17 @@ describe('issuance', () => {
         fromAddress: testAddress,
       })
 
-      // Verify only one transaction was broadcast (no P2C funding tx needed)
-      expect(broadcastCalls).toHaveLength(1)
+      // Verify two transactions were broadcast (P2C funding + issue)
+      expect(broadcastCalls).toHaveLength(2)
 
       // Verify no outPoint for c1 (colorId derived from P2C public key, not OutPoint)
       expect(result.outPoint).toBeUndefined()
+
+      // Verify second transaction uses first transaction's output as input
+      const firstTxId = '0000000000000000000000000000000000000000000000000000000000000001'
+      const secondTxHex = broadcastCalls[1]
+      const reversedFirstTxId = firstTxId.match(/.{2}/g)!.reverse().join('')
+      expect(secondTxHex).toContain(reversedFirstTxId)
     })
 
     it('should generate consistent colorId for same metadata and key', async () => {
