@@ -148,4 +148,19 @@ describe('secp256k1-compat', () => {
       expect(result).toHaveLength(33)
     })
   })
+
+  describe('hex string validation', () => {
+    it('should reject invalid hex characters', () => {
+      expect(() => ecc.isPoint('invalidhexstring!')).toThrow('Invalid hex string')
+    })
+
+    it('should reject odd-length hex string', () => {
+      expect(() => ecc.isPoint('abc')).toThrow('Hex string must have even length')
+    })
+
+    it('should accept valid hex string with 0x prefix', () => {
+      // This should not throw, though isPoint will return false for short data
+      expect(() => ecc.isPoint('0x0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798')).not.toThrow()
+    })
+  })
 })

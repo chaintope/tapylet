@@ -22,6 +22,13 @@ function toUint8Array(data) {
   if (typeof data === 'string') {
     // Assume hex string
     const hex = data.replace(/^0x/, '');
+    // Validate hex string
+    if (!/^[0-9a-fA-F]*$/.test(hex)) {
+      throw new Error('Invalid hex string');
+    }
+    if (hex.length % 2 !== 0) {
+      throw new Error('Hex string must have even length');
+    }
     const bytes = new Uint8Array(hex.length / 2);
     for (let i = 0; i < bytes.length; i++) {
       bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
