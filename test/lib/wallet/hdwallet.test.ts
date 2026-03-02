@@ -1,7 +1,8 @@
 import { createHDWallet, getPublicKeyFromWIF, NetworkId } from '../../../src/lib/wallet/hdwallet'
+import { TEST_MNEMONIC } from '../../helpers/mockWallet'
 
 describe('hdwallet', () => {
-  const testMnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+  const testMnemonic = TEST_MNEMONIC
 
   describe('createHDWallet', () => {
     it('should create wallet with private key, public key, and WIF', async () => {

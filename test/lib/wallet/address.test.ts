@@ -1,8 +1,9 @@
 import { generateAddress, validateAddress, shortenAddress } from '../../../src/lib/wallet/address'
 import { createHDWallet } from '../../../src/lib/wallet/hdwallet'
+import { TEST_MNEMONIC } from '../../helpers/mockWallet'
 
 describe('address', () => {
-  const testMnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
+  const testMnemonic = TEST_MNEMONIC
 
   describe('generateAddress', () => {
     it('should generate a valid Tapyrus address from public key', async () => {

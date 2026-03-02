@@ -1,6 +1,6 @@
 import * as tapyrus from "tapyrusjs-lib"
 import { getAddressUtxos, broadcastTransaction, isTpcColorId, type Utxo } from "../api/esplora"
-import { createHDWallet } from "./hdwallet"
+import { getKeyPairFromMnemonic } from "./hdwallet"
 import { DUST_THRESHOLD, DEFAULT_FEE_RATE } from "../constants/transaction"
 
 // Filter UTXOs by colorId
@@ -78,9 +78,7 @@ export const createAndSignTransaction = async (
   const { selectedUtxos, totalInput, fee } = selectUtxos(utxos, amount, feeRate)
 
   // Get keys from mnemonic
-  const keys = await createHDWallet(mnemonic)
-  const network = tapyrus.networks.prod
-  const keyPair = tapyrus.ECPair.fromWIF(keys.wif, network)
+  const { keyPair, network } = await getKeyPairFromMnemonic(mnemonic)
 
   // Create transaction builder
   const txb = new tapyrus.TransactionBuilder(network)
@@ -199,9 +197,7 @@ export const createAndSignAssetTransaction = async (
     selectUtxos(tpcUtxos, estimatedFee, feeRate)
 
   // Get keys from mnemonic
-  const keys = await createHDWallet(mnemonic)
-  const network = tapyrus.networks.prod
-  const keyPair = tapyrus.ECPair.fromWIF(keys.wif, network)
+  const { keyPair, network } = await getKeyPairFromMnemonic(mnemonic)
 
   // Create transaction builder
   const txb = new tapyrus.TransactionBuilder(network)
@@ -324,9 +320,7 @@ export const burnAsset = async (
     selectUtxos(tpcUtxos, estimatedFee, feeRate)
 
   // Get keys from mnemonic
-  const keys = await createHDWallet(mnemonic)
-  const network = tapyrus.networks.prod
-  const keyPair = tapyrus.ECPair.fromWIF(keys.wif, network)
+  const { keyPair, network } = await getKeyPairFromMnemonic(mnemonic)
 
   // Create transaction builder
   const txb = new tapyrus.TransactionBuilder(network)

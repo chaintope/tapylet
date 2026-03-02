@@ -1,6 +1,7 @@
 import { issueToken, type TokenType, type MetadataFields } from '../../../src/lib/wallet/issuance'
 import * as esplora from '../../../src/lib/api/esplora'
 import * as hdwallet from '../../../src/lib/wallet/hdwallet'
+import { TEST_MNEMONIC, TEST_ADDRESS, mockPublicKey, mockKeyPairWithNetwork } from '../../helpers/mockWallet'
 
 // Mock the modules
 jest.mock('../../../src/lib/api/esplora')
@@ -10,16 +11,8 @@ const mockedEsplora = esplora as jest.Mocked<typeof esplora>
 const mockedHdwallet = hdwallet as jest.Mocked<typeof hdwallet>
 
 describe('issuance', () => {
-  const testMnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'
-  // Valid Tapyrus prod address
-  const testAddress = '1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH'
-
-  // Mock wallet keys
-  const mockKeys = {
-    privateKey: Buffer.alloc(32, 1),
-    publicKey: Buffer.from('0279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798', 'hex'),
-    wif: 'KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU73sVHnoWn',
-  }
+  const testMnemonic = TEST_MNEMONIC
+  const testAddress = TEST_ADDRESS
 
   // Mock TPC UTXOs with sufficient balance
   const mockTpcUtxos: esplora.Utxo[] = [
@@ -43,7 +36,7 @@ describe('issuance', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
-    mockedHdwallet.createHDWallet.mockResolvedValue(mockKeys)
+    mockedHdwallet.getKeyPairFromMnemonic.mockResolvedValue(mockKeyPairWithNetwork)
     mockedEsplora.getAddressUtxos.mockResolvedValue(mockTpcUtxos)
     mockedEsplora.isTpcColorId.mockImplementation((colorId) => {
       return !colorId || colorId === esplora.TPC_COLOR_ID
@@ -335,7 +328,7 @@ describe('issuance', () => {
       })
 
       // paymentBase should be the original public key hex
-      expect(result.paymentBase).toBe(mockKeys.publicKey.toString('hex'))
+      expect(result.paymentBase).toBe(mockPublicKey.toString('hex'))
     })
   })
 })

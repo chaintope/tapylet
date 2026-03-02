@@ -44,3 +44,24 @@ export const getPublicKeyFromWIF = (wif: string): Uint8Array => {
   const keyPair = tapyrus.ECPair.fromWIF(wif, network)
   return keyPair.publicKey
 }
+
+export interface KeyPairWithNetwork {
+  keyPair: tapyrus.ECPairInterface
+  publicKey: Buffer
+  network: tapyrus.Network
+}
+
+export const getKeyPairFromMnemonic = async (
+  mnemonic: string,
+  networkId: tapyrus.NetworkId = DEFAULT_NETWORK_ID,
+  index = 0
+): Promise<KeyPairWithNetwork> => {
+  const keys = await createHDWallet(mnemonic, networkId, index)
+  const network = tapyrus.networks.prod
+  const keyPair = tapyrus.ECPair.fromWIF(keys.wif, network)
+  return {
+    keyPair,
+    publicKey: keyPair.publicKey,
+    network,
+  }
+}

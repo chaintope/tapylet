@@ -2,7 +2,7 @@ import * as tapyrus from "tapyrusjs-lib"
 import { Metadata } from "tapyrusjs-lib"
 import * as ecc from "tiny-secp256k1"
 import { getAddressUtxos, broadcastTransaction, isTpcColorId, type Utxo } from "../api/esplora"
-import { createHDWallet } from "./hdwallet"
+import { getKeyPairFromMnemonic } from "./hdwallet"
 import { DUST_THRESHOLD, DEFAULT_FEE_RATE } from "../constants/transaction"
 
 export type TokenType = "reissuable" | "non_reissuable" | "nft"
@@ -94,10 +94,7 @@ export const issueToken = async (options: IssueOptions): Promise<IssueResult> =>
   }
 
   // Get keys from mnemonic
-  const keys = await createHDWallet(mnemonic)
-  const network = tapyrus.networks.prod
-  const keyPair = tapyrus.ECPair.fromWIF(keys.wif, network)
-  const publicKey = keyPair.publicKey
+  const { keyPair, publicKey, network } = await getKeyPairFromMnemonic(mnemonic)
 
   // Create Metadata instance
   const metadata = new Metadata(metadataFields)
