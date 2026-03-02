@@ -3,9 +3,7 @@ import { Metadata } from "tapyrusjs-lib"
 import * as ecc from "tiny-secp256k1"
 import { getAddressUtxos, broadcastTransaction, isTpcColorId, type Utxo } from "../api/esplora"
 import { createHDWallet } from "./hdwallet"
-
-const DUST_THRESHOLD = 546
-const DEFAULT_FEE_RATE = 3
+import { DUST_THRESHOLD, DEFAULT_FEE_RATE } from "../constants/transaction"
 
 export type TokenType = "reissuable" | "non_reissuable" | "nft"
 

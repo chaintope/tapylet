@@ -1,9 +1,7 @@
 import * as tapyrus from "tapyrusjs-lib"
 import { getAddressUtxos, broadcastTransaction, isTpcColorId, type Utxo } from "../api/esplora"
 import { createHDWallet } from "./hdwallet"
-
-const DUST_THRESHOLD = 546
-const DEFAULT_FEE_RATE = 3 // tapyrus per byte
+import { DUST_THRESHOLD, DEFAULT_FEE_RATE } from "../constants/transaction"
 
 // Filter UTXOs by colorId
 const filterUtxosByColorId = (utxos: Utxo[], colorId?: string): Utxo[] => {
