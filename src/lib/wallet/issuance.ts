@@ -140,8 +140,7 @@ export const issueToken = async (options: IssueOptions): Promise<IssueResult> =>
       amount,
       fromAddress,
       feeRate,
-      network,
-      tokenType
+      network
     )
   }
 }
@@ -284,8 +283,7 @@ const issueNonReissuableToken = async (
   amount: number,
   fromAddress: string,
   feeRate: number,
-  network: tapyrus.Network,
-  tokenType: TokenType
+  network: tapyrus.Network
 ): Promise<IssueResult> => {
   // Step 1: Create P2C address and send TPC to it
   const p2cPayment = tapyrus.payments.p2pkh({
