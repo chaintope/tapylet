@@ -1,7 +1,9 @@
-import React from "react"
+import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "../components/ui"
 import type { AppScreen } from "../types/wallet"
+
+const LEGAL_BASE_URL = "https://chaintope.github.io/tapylet"
 
 interface WelcomeScreenProps {
   onNavigate: (screen: AppScreen) => void
@@ -9,6 +11,15 @@ interface WelcomeScreenProps {
 
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
   const { t } = useTranslation()
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
+  const [agreedToPrivacy, setAgreedToPrivacy] = useState(false)
+
+  const canProceed = agreedToTerms && agreedToPrivacy
+
+  const handleNavigate = (screen: AppScreen) => {
+    if (!canProceed) return
+    onNavigate(screen)
+  }
 
   return (
     <div className="flex flex-col h-full p-6">
@@ -37,17 +48,61 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNavigate }) => {
         </p>
       </div>
 
+      {/* Consent Checkboxes */}
+      <div className="space-y-3 mb-4">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={agreedToTerms}
+            onChange={(e) => setAgreedToTerms(e.target.checked)}
+            className="mt-0.5 w-4 h-4 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
+          />
+          <span className="text-sm text-slate-600">
+            <a
+              href={`${LEGAL_BASE_URL}/terms.html`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 hover:underline"
+              onClick={(e) => e.stopPropagation()}>
+              {t("welcome.termsOfService")}
+            </a>
+            {t("welcome.agreeToTerms").replace(t("welcome.termsOfService"), "").trim()}
+          </span>
+        </label>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={agreedToPrivacy}
+            onChange={(e) => setAgreedToPrivacy(e.target.checked)}
+            className="mt-0.5 w-4 h-4 text-primary-600 rounded border-slate-300 focus:ring-primary-500"
+          />
+          <span className="text-sm text-slate-600">
+            <a
+              href={`${LEGAL_BASE_URL}/privacy.html`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 hover:underline"
+              onClick={(e) => e.stopPropagation()}>
+              {t("welcome.privacyPolicy")}
+            </a>
+            {t("welcome.agreeToPrivacy").replace(t("welcome.privacyPolicy"), "").trim()}
+          </span>
+        </label>
+      </div>
+
       {/* Actions */}
       <div className="space-y-3">
         <Button
           fullWidth
-          onClick={() => onNavigate("create")}>
+          disabled={!canProceed}
+          onClick={() => handleNavigate("create")}>
           {t("welcome.createWallet")}
         </Button>
         <Button
           variant="outline"
           fullWidth
-          onClick={() => onNavigate("restore")}>
+          disabled={!canProceed}
+          onClick={() => handleNavigate("restore")}>
           {t("welcome.restoreWallet")}
         </Button>
       </div>

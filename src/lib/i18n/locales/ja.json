@@ -68,7 +68,12 @@
     "title": "Tapylet へようこそ",
     "subtitle": "Tapyrus ウォレット",
     "createWallet": "新規ウォレット作成",
-    "restoreWallet": "ウォレットを復元"
+    "restoreWallet": "ウォレットを復元",
+    "agreeToTerms": "利用規約に同意する",
+    "agreeToPrivacy": "プライバシーポリシーに同意する",
+    "termsOfService": "利用規約",
+    "privacyPolicy": "プライバシーポリシー",
+    "mustAgree": "続行するには利用規約とプライバシーポリシーに同意してください"
   },
   "createWallet": {
     "title": "ウォレット作成",
@@ -154,7 +159,10 @@
     "title": "設定",
     "about": "アプリ情報",
     "version": "バージョン",
-    "network": "ネットワーク"
+    "network": "ネットワーク",
+    "legal": "法的情報",
+    "termsOfService": "利用規約",
+    "privacyPolicy": "プライバシーポリシー"
   },
   "issue": {
     "title": "アセット発行",

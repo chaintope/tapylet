@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "../components/ui"
 import type { AppScreen } from "../types/wallet"
 
+const LEGAL_BASE_URL = "https://chaintope.github.io/tapylet"
+
 interface SettingsScreenProps {
   onNavigate: (screen: AppScreen) => void
 }
@@ -56,6 +58,59 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
                 <span className="text-sm text-slate-600">{t("settings.network")}</span>
                 <span className="text-sm text-slate-800">{t("wallet.testnet")}</span>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Legal Info */}
+        <Card>
+          <CardContent>
+            <h2 className="text-sm font-medium text-slate-700 mb-3">
+              {t("settings.legal")}
+            </h2>
+            <div className="space-y-2">
+              <a
+                href={`${LEGAL_BASE_URL}/terms.html`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex justify-between items-center group">
+                <span className="text-sm text-slate-600 group-hover:text-primary-600">
+                  {t("settings.termsOfService")}
+                </span>
+                <svg
+                  className="w-4 h-4 text-slate-400 group-hover:text-primary-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
+              <a
+                href={`${LEGAL_BASE_URL}/privacy.html`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex justify-between items-center group">
+                <span className="text-sm text-slate-600 group-hover:text-primary-600">
+                  {t("settings.privacyPolicy")}
+                </span>
+                <svg
+                  className="w-4 h-4 text-slate-400 group-hover:text-primary-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
             </div>
           </CardContent>
         </Card>

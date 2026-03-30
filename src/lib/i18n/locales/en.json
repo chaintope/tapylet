@@ -68,7 +68,12 @@
     "title": "Welcome to Tapylet",
     "subtitle": "Your Tapyrus wallet",
     "createWallet": "Create New Wallet",
-    "restoreWallet": "Restore Wallet"
+    "restoreWallet": "Restore Wallet",
+    "agreeToTerms": "I agree to the Terms of Service",
+    "agreeToPrivacy": "I agree to the Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "mustAgree": "Please agree to the Terms of Service and Privacy Policy to continue"
   },
   "createWallet": {
     "title": "Create Wallet",
@@ -154,7 +159,10 @@
     "title": "Settings",
     "about": "About",
     "version": "Version",
-    "network": "Network"
+    "network": "Network",
+    "legal": "Legal",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy"
   },
   "issue": {
     "title": "Issue Asset",
