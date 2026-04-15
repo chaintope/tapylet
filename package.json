@@ -51,7 +51,8 @@
   },
   "manifest": {
     "host_permissions": [
-      "https://*/*"
+      "https://testnet-explorer.tapyrus.dev.chaintope.com/*",
+      "https://chaintope.github.io/*"
     ],
     "permissions": [
       "sidePanel"
