@@ -5,8 +5,6 @@ import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions, AssetDeta
 import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
 import { issuedTokenStore } from "../lib/storage/issuedTokenStore"
-import { settingsStore, DEFAULT_AUTO_LOCK_MINUTES } from "../lib/storage/settingsStore"
-import { useAutoLock } from "../lib/hooks/useAutoLock"
 import { getAllBalances, formatTpc, formatTokenAmount, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "../lib/api"
 import { sanitizeImageUrl } from "../lib/utils/sanitize"
 import type { AppScreen } from "../types/wallet"
@@ -31,20 +29,11 @@ export const MainWalletScreen: React.FC<MainWalletScreenProps> = ({
   const [pendingTxs, setPendingTxs] = useState<PendingTransaction[]>([])
   const [tokenMetadata, setTokenMetadata] = useState<Map<string, Metadata>>(new Map())
   const [selectedAssetColorId, setSelectedAssetColorId] = useState<string | null>(null)
-  const [autoLockMinutes, setAutoLockMinutes] = useState<number>(DEFAULT_AUTO_LOCK_MINUTES)
 
-  useEffect(() => {
-    settingsStore.getAutoLockMinutes().then(setAutoLockMinutes)
-    const unwatch = settingsStore.watchAutoLockMinutes(setAutoLockMinutes)
-    return unwatch
-  }, [])
-
-  const handleLock = useCallback(() => {
+  const handleLock = () => {
     walletStorage.lock()
     onNavigate("unlock")
-  }, [onNavigate])
-
-  useAutoLock(autoLockMinutes * 60 * 1000, handleLock)
+  }
 
   const refreshData = useCallback(async () => {
     // Check and remove confirmed transactions

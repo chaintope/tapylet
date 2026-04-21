@@ -1,15 +1,20 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Loading } from "./components/ui"
 import { walletStorage } from "./lib/storage/secureStore"
+import { settingsStore, DEFAULT_AUTO_LOCK_MINUTES } from "./lib/storage/settingsStore"
+import { useAutoLock } from "./lib/hooks/useAutoLock"
 import { WelcomeScreen, CreateWalletScreen, MnemonicDisplayScreen, MnemonicConfirmScreen, PasswordSetupScreen, RestoreWalletScreen, UnlockScreen, MainWalletScreen, SettingsScreen } from "./screens"
 import type { AppScreen } from "./types/wallet"
 import "./lib/i18n"
 import "./styles/globals.css"
 
+const UNLOCKED_SCREENS: AppScreen[] = ["main", "settings"]
+
 function SidePanel() {
   const [screen, setScreen] = useState<AppScreen>("loading")
   const [tempMnemonic, setTempMnemonic] = useState<string | null>(null)
   const [address, setAddress] = useState<string | null>(null)
+  const [autoLockMinutes, setAutoLockMinutes] = useState<number>(DEFAULT_AUTO_LOCK_MINUTES)
 
   useEffect(() => {
     const init = async () => {
@@ -23,6 +28,20 @@ function SidePanel() {
     }
     init()
   }, [])
+
+  useEffect(() => {
+    settingsStore.getAutoLockMinutes().then(setAutoLockMinutes)
+    const unwatch = settingsStore.watchAutoLockMinutes(setAutoLockMinutes)
+    return unwatch
+  }, [])
+
+  const handleAutoLock = useCallback(() => {
+    walletStorage.lock()
+    setScreen("unlock")
+  }, [])
+
+  const isUnlockedScreen = UNLOCKED_SCREENS.includes(screen)
+  useAutoLock(isUnlockedScreen ? autoLockMinutes * 60 * 1000 : 0, handleAutoLock)
 
   const handleNavigate = (newScreen: AppScreen) => setScreen(newScreen)
   const handleMnemonicGenerated = (mnemonic: string) => setTempMnemonic(mnemonic)
