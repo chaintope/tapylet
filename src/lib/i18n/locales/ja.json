@@ -162,7 +162,15 @@
     "network": "ネットワーク",
     "legal": "法的情報",
     "termsOfService": "利用規約",
-    "privacyPolicy": "プライバシーポリシー"
+    "privacyPolicy": "プライバシーポリシー",
+    "security": "セキュリティ",
+    "autoLock": "自動ロック",
+    "autoLockDescription": "操作がないと自動的にロックします",
+    "autoLockMinutes_one": "{{count}} 分",
+    "autoLockMinutes_other": "{{count}} 分",
+    "autoLockHours_one": "{{count}} 時間",
+    "autoLockHours_other": "{{count}} 時間",
+    "autoLockNever": "ロックしない"
   },
   "issue": {
     "title": "アセット発行",

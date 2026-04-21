@@ -162,7 +162,15 @@
     "network": "Network",
     "legal": "Legal",
     "termsOfService": "Terms of Service",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "security": "Security",
+    "autoLock": "Auto-lock",
+    "autoLockDescription": "Automatically lock after inactivity",
+    "autoLockMinutes_one": "{{count}} minute",
+    "autoLockMinutes_other": "{{count}} minutes",
+    "autoLockHours_one": "{{count}} hour",
+    "autoLockHours_other": "{{count}} hours",
+    "autoLockNever": "Never"
   },
   "issue": {
     "title": "Issue Asset",

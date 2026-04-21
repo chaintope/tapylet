@@ -1,6 +1,7 @@
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "../components/ui"
+import { settingsStore, AUTO_LOCK_OPTIONS, DEFAULT_AUTO_LOCK_MINUTES } from "../lib/storage/settingsStore"
 import type { AppScreen } from "../types/wallet"
 
 const LEGAL_BASE_URL = "https://chaintope.github.io/tapylet"
@@ -15,6 +16,23 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onNavigate,
 }) => {
   const { t } = useTranslation()
+  const [autoLockMinutes, setAutoLockMinutes] = useState<number>(DEFAULT_AUTO_LOCK_MINUTES)
+
+  useEffect(() => {
+    settingsStore.getAutoLockMinutes().then(setAutoLockMinutes)
+  }, [])
+
+  const handleAutoLockChange = async (minutes: number) => {
+    setAutoLockMinutes(minutes)
+    await settingsStore.setAutoLockMinutes(minutes)
+  }
+
+  const formatAutoLockOption = (minutes: number) => {
+    if (minutes === 0) return t("settings.autoLockNever")
+    if (minutes < 60) return t("settings.autoLockMinutes", { count: minutes })
+    const hours = minutes / 60
+    return t("settings.autoLockHours", { count: hours })
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -43,6 +61,33 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({
 
       {/* Content */}
       <div className="flex-1 p-6 space-y-4">
+        {/* Security */}
+        <Card>
+          <CardContent>
+            <h2 className="text-sm font-medium text-slate-700 mb-3">
+              {t("settings.security")}
+            </h2>
+            <div className="flex justify-between items-center">
+              <div className="flex-1 pr-3">
+                <p className="text-sm text-slate-800">{t("settings.autoLock")}</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {t("settings.autoLockDescription")}
+                </p>
+              </div>
+              <select
+                value={autoLockMinutes}
+                onChange={(e) => handleAutoLockChange(Number(e.target.value))}
+                className="px-3 py-1.5 rounded-lg border border-slate-300 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                {AUTO_LOCK_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {formatAutoLockOption(option)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Version Info */}
         <Card>
           <CardContent>
