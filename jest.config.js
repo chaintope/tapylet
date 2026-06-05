@@ -6,6 +6,9 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   moduleNameMapper: {
     '^tiny-secp256k1$': '<rootDir>/src/lib/secp256k1-compat.js',
+    // @plasmohq/storage is ESM-only; tests inject in-memory stores instead.
+    '^@plasmohq/storage/secure$': '<rootDir>/test/helpers/plasmoStub.ts',
+    '^@plasmohq/storage$': '<rootDir>/test/helpers/plasmoStub.ts',
   },
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
