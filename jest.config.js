@@ -9,6 +9,7 @@ module.exports = {
     // @plasmohq/storage is ESM-only; tests inject in-memory stores instead.
     '^@plasmohq/storage/secure$': '<rootDir>/test/helpers/plasmoStub.ts',
     '^@plasmohq/storage$': '<rootDir>/test/helpers/plasmoStub.ts',
+    '^~/(.*)$': '<rootDir>/src/$1',
   },
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
