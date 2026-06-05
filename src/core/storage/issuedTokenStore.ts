@@ -1,5 +1,4 @@
 import type { KeyValueStore } from "~/core/storage/types"
-import { PlasmoKeyValueStore } from "./adapters/plasmo"
 
 export interface IssuedToken {
   colorId: string
@@ -62,5 +61,3 @@ export class IssuedTokenStore {
   }
 }
 
-// Extension-specific singleton.
-export const issuedTokenStore = new IssuedTokenStore(new PlasmoKeyValueStore())

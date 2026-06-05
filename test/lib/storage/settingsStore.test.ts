@@ -1,7 +1,7 @@
 import {
   SettingsStore,
   DEFAULT_AUTO_LOCK_MINUTES,
-} from '../../../src/lib/storage/settingsStore'
+} from '~/core/storage/settingsStore'
 import { InMemoryKeyValueStore } from '../../helpers/memoryStore'
 
 describe('SettingsStore', () => {

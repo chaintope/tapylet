@@ -1,4 +1,4 @@
-import { PendingTxStore, type PendingTransaction } from '../../../src/lib/storage/pendingTxStore'
+import { PendingTxStore, type PendingTransaction } from '~/core/storage/pendingTxStore'
 import { InMemoryKeyValueStore } from '../../helpers/memoryStore'
 
 describe('PendingTxStore', () => {

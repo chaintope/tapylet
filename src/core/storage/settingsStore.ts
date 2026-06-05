@@ -1,5 +1,4 @@
 import type { KeyValueStore } from "~/core/storage/types"
-import { PlasmoKeyValueStore } from "./adapters/plasmo"
 
 const AUTO_LOCK_KEY = "auto_lock_minutes"
 export const DEFAULT_AUTO_LOCK_MINUTES = 5
@@ -31,5 +30,3 @@ export class SettingsStore {
   }
 }
 
-// Extension-specific singleton.
-export const settingsStore = new SettingsStore(new PlasmoKeyValueStore())

@@ -1,6 +1,6 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
-import type { PendingTransaction } from "../../lib/storage/pendingTxStore"
+import type { PendingTransaction } from "~/extension/storage"
 import { formatTpc, formatTokenAmount, getExplorerTxUrl, formatColorId, getExplorerColorUrl, type Metadata } from "~/core/api"
 
 interface PendingTransactionsProps {

@@ -1,4 +1,4 @@
-import { WalletStorage } from '../../../src/lib/storage/secureStore'
+import { WalletStorage } from '~/core/storage/walletStorage'
 import type { WalletData } from '~/core/types/wallet'
 import { InMemoryKeyValueStore, InMemorySecureStore } from '../../helpers/memoryStore'
 

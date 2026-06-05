@@ -1,5 +1,4 @@
 import type { KeyValueStore } from "~/core/storage/types"
-import { PlasmoKeyValueStore } from "./adapters/plasmo"
 
 export interface PendingTransaction {
   txid: string
@@ -36,5 +35,3 @@ export class PendingTxStore {
   }
 }
 
-// Extension-specific singleton.
-export const pendingTxStore = new PendingTxStore(new PlasmoKeyValueStore())

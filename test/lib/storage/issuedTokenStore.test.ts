@@ -1,4 +1,4 @@
-import { IssuedTokenStore, type IssuedToken } from '../../../src/lib/storage/issuedTokenStore'
+import { IssuedTokenStore, type IssuedToken } from '~/core/storage/issuedTokenStore'
 import { InMemoryKeyValueStore } from '../../helpers/memoryStore'
 
 describe('IssuedTokenStore', () => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent } from "../components/ui"
-import { settingsStore, AUTO_LOCK_OPTIONS, DEFAULT_AUTO_LOCK_MINUTES } from "../lib/storage/settingsStore"
+import { settingsStore, AUTO_LOCK_OPTIONS, DEFAULT_AUTO_LOCK_MINUTES } from "~/extension/storage"
 import type { AppScreen } from "~/extension/types/navigation"
 
 const LEGAL_BASE_URL = "https://chaintope.github.io/tapylet"

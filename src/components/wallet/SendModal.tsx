@@ -4,7 +4,7 @@ import { Button, Input } from "../ui"
 import { validateAddress } from "~/core/wallet"
 import { createAndSignTransaction, createAndSignAssetTransaction } from "~/core/wallet/transaction"
 import { parseTpc, formatTpc, formatTokenAmount, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails, type Metadata } from "~/core/api"
-import { walletStorage } from "../../lib/storage/secureStore"
+import { walletStorage } from "~/extension/storage"
 import { isValidAmount, parseAndValidateAmount, MAX_AMOUNT, MAX_COLORED_AMOUNT } from "~/core/utils/validation"
 
 interface SendModalProps {

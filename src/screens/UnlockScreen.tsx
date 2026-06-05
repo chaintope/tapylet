@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../components/ui"
-import { walletStorage } from "../lib/storage/secureStore"
+import { walletStorage } from "~/extension/storage"
 import type { AppScreen } from "~/extension/types/navigation"
 
 interface UnlockScreenProps {

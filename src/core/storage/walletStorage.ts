@@ -1,6 +1,5 @@
 import type { WalletData } from "~/core/types/wallet"
 import type { KeyValueStore, SecureKeyValueStore } from "~/core/storage/types"
-import { PlasmoKeyValueStore, PlasmoSecureStore } from "./adapters/plasmo"
 
 const STORAGE_KEYS = {
   WALLET_DATA: "wallet_data",
@@ -80,11 +79,3 @@ export class WalletStorage {
     this.isUnlocked = false
   }
 }
-
-// Extension-specific singleton: injects the plasmohq adapters.
-// When extracting a core package, move the class above out and keep this
-// instantiation in the Extension app.
-export const walletStorage = new WalletStorage(
-  new PlasmoSecureStore(),
-  new PlasmoKeyValueStore(),
-)
