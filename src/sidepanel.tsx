@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from "react"
-import { Loading } from "./components/ui"
+import { Loading } from "~/extension/components/ui"
 import { walletStorage } from "~/extension/storage"
 import { settingsStore, DEFAULT_AUTO_LOCK_MINUTES } from "~/extension/storage"
-import { useAutoLock } from "./lib/hooks/useAutoLock"
-import { WelcomeScreen, CreateWalletScreen, MnemonicDisplayScreen, MnemonicConfirmScreen, PasswordSetupScreen, RestoreWalletScreen, UnlockScreen, MainWalletScreen, SettingsScreen } from "./screens"
+import { useAutoLock } from "~/extension/hooks/useAutoLock"
+import { WelcomeScreen, CreateWalletScreen, MnemonicDisplayScreen, MnemonicConfirmScreen, PasswordSetupScreen, RestoreWalletScreen, UnlockScreen, MainWalletScreen, SettingsScreen } from "~/extension/screens"
 import type { AppScreen } from "~/extension/types/navigation"
-import "./lib/i18n"
+import "~/extension/i18n"
 import "./styles/globals.css"
 
 const UNLOCKED_SCREENS: AppScreen[] = ["main", "settings"]
