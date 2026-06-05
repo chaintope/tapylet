@@ -1,4 +1,5 @@
-import { Storage } from "@plasmohq/storage"
+import type { KeyValueStore } from "./types"
+import { PlasmoKeyValueStore } from "./adapters/plasmo"
 
 export interface IssuedToken {
   colorId: string
@@ -34,28 +35,32 @@ export interface IssuedToken {
 }
 
 const STORAGE_KEY = "issued_tokens"
-const storage = new Storage({ area: "local" })
 
-export const issuedTokenStore = {
+export class IssuedTokenStore {
+  constructor(private storage: KeyValueStore) {}
+
   async getAll(): Promise<IssuedToken[]> {
-    const tokens = await storage.get<IssuedToken[]>(STORAGE_KEY)
+    const tokens = await this.storage.get<IssuedToken[]>(STORAGE_KEY)
     return tokens ?? []
-  },
+  }
 
   async add(token: IssuedToken): Promise<void> {
     const tokens = await this.getAll()
     tokens.push(token)
-    await storage.set(STORAGE_KEY, tokens)
-  },
+    await this.storage.set(STORAGE_KEY, tokens)
+  }
 
   async get(colorId: string): Promise<IssuedToken | null> {
     const tokens = await this.getAll()
     return tokens.find((t) => t.colorId === colorId) ?? null
-  },
+  }
 
   async remove(colorId: string): Promise<void> {
     const tokens = await this.getAll()
     const filtered = tokens.filter((t) => t.colorId !== colorId)
-    await storage.set(STORAGE_KEY, filtered)
-  },
+    await this.storage.set(STORAGE_KEY, filtered)
+  }
 }
+
+// Extension-specific singleton.
+export const issuedTokenStore = new IssuedTokenStore(new PlasmoKeyValueStore())

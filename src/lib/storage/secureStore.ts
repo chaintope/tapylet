@@ -1,6 +1,6 @@
-import { SecureStorage } from "@plasmohq/storage/secure"
-import { Storage } from "@plasmohq/storage"
 import type { WalletData } from "../../types/wallet"
+import type { KeyValueStore, SecureKeyValueStore } from "./types"
+import { PlasmoKeyValueStore, PlasmoSecureStore } from "./adapters/plasmo"
 
 const STORAGE_KEYS = {
   WALLET_DATA: "wallet_data",
@@ -8,14 +8,18 @@ const STORAGE_KEYS = {
   PASSWORD_HASH: "password_hash",
 } as const
 
-class WalletStorage {
-  private secureStorage: SecureStorage
-  private plainStorage: Storage
+// Platform-agnostic wallet storage. Depends only on the storage interfaces,
+// so the same class works on Extension / Mobile / Web by injecting a
+// different adapter. This class is a candidate to move into a shared core
+// package; only the singleton at the bottom is Extension-specific.
+export class WalletStorage {
+  private secureStorage: SecureKeyValueStore
+  private plainStorage: KeyValueStore
   private isUnlocked: boolean = false
 
-  constructor() {
-    this.secureStorage = new SecureStorage({ area: "local" })
-    this.plainStorage = new Storage({ area: "local" })
+  constructor(secureStorage: SecureKeyValueStore, plainStorage: KeyValueStore) {
+    this.secureStorage = secureStorage
+    this.plainStorage = plainStorage
   }
 
   async setPassword(password: string): Promise<void> {
@@ -77,4 +81,10 @@ class WalletStorage {
   }
 }
 
-export const walletStorage = new WalletStorage()
+// Extension-specific singleton: injects the plasmohq adapters.
+// When extracting a core package, move the class above out and keep this
+// instantiation in the Extension app.
+export const walletStorage = new WalletStorage(
+  new PlasmoSecureStore(),
+  new PlasmoKeyValueStore(),
+)

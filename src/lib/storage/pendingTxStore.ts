@@ -1,4 +1,5 @@
-import { Storage } from "@plasmohq/storage"
+import type { KeyValueStore } from "./types"
+import { PlasmoKeyValueStore } from "./adapters/plasmo"
 
 export interface PendingTransaction {
   txid: string
@@ -9,27 +10,31 @@ export interface PendingTransaction {
 }
 
 const STORAGE_KEY = "pending_transactions"
-const storage = new Storage({ area: "local" })
 
-export const pendingTxStore = {
+export class PendingTxStore {
+  constructor(private storage: KeyValueStore) {}
+
   async getAll(): Promise<PendingTransaction[]> {
-    const txs = await storage.get<PendingTransaction[]>(STORAGE_KEY)
+    const txs = await this.storage.get<PendingTransaction[]>(STORAGE_KEY)
     return txs ?? []
-  },
+  }
 
   async add(tx: PendingTransaction): Promise<void> {
     const txs = await this.getAll()
     txs.push(tx)
-    await storage.set(STORAGE_KEY, txs)
-  },
+    await this.storage.set(STORAGE_KEY, txs)
+  }
 
   async remove(txid: string): Promise<void> {
     const txs = await this.getAll()
-    const filtered = txs.filter(tx => tx.txid !== txid)
-    await storage.set(STORAGE_KEY, filtered)
-  },
+    const filtered = txs.filter((tx) => tx.txid !== txid)
+    await this.storage.set(STORAGE_KEY, filtered)
+  }
 
   async clear(): Promise<void> {
-    await storage.set(STORAGE_KEY, [])
+    await this.storage.set(STORAGE_KEY, [])
   }
 }
+
+// Extension-specific singleton.
+export const pendingTxStore = new PendingTxStore(new PlasmoKeyValueStore())
