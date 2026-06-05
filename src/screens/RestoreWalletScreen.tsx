@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "../components/ui"
 import { validateMnemonic, normalizeMnemonic } from "../lib/wallet"
-import type { AppScreen } from "../types/wallet"
+import type { AppScreen } from "~/extension/types/navigation"
 
 interface RestoreWalletScreenProps {
   onNavigate: (screen: AppScreen) => void

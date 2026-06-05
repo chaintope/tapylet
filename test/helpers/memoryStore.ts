@@ -1,7 +1,7 @@
 // In-memory implementations of the storage interfaces, used to test the
 // platform-agnostic store classes without touching @plasmohq/storage.
 
-import type { KeyValueStore, SecureKeyValueStore } from '../../src/lib/storage/types'
+import type { KeyValueStore, SecureKeyValueStore } from '~/core/storage/types'
 
 export class InMemoryKeyValueStore implements KeyValueStore {
   private data = new Map<string, unknown>()

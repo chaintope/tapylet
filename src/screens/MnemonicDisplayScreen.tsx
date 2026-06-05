@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next"
 import { Button } from "../components/ui"
 import { MnemonicGrid } from "../components/wallet"
 import { mnemonicToWords } from "../lib/wallet"
-import type { AppScreen } from "../types/wallet"
+import type { AppScreen } from "~/extension/types/navigation"
 
 interface MnemonicDisplayScreenProps {
   mnemonic: string

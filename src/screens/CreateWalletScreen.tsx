@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Loading } from "../components/ui"
 import { generateMnemonic } from "../lib/wallet"
-import type { AppScreen } from "../types/wallet"
+import type { AppScreen } from "~/extension/types/navigation"
 
 interface CreateWalletScreenProps {
   onNavigate: (screen: AppScreen) => void

@@ -1,5 +1,5 @@
 import { WalletStorage } from '../../../src/lib/storage/secureStore'
-import type { WalletData } from '../../../src/types/wallet'
+import type { WalletData } from '~/core/types/wallet'
 import { InMemoryKeyValueStore, InMemorySecureStore } from '../../helpers/memoryStore'
 
 describe('WalletStorage', () => {

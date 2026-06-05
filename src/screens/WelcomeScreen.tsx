@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "../components/ui"
-import type { AppScreen } from "../types/wallet"
+import type { AppScreen } from "~/extension/types/navigation"
 
 const LEGAL_BASE_URL = "https://chaintope.github.io/tapylet"
 

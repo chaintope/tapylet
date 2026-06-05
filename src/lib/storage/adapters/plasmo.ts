@@ -5,7 +5,7 @@
 
 import { Storage } from "@plasmohq/storage"
 import { SecureStorage } from "@plasmohq/storage/secure"
-import type { KeyValueStore, SecureKeyValueStore } from "../types"
+import type { KeyValueStore, SecureKeyValueStore } from "~/core/storage/types"
 
 type StorageArea = "local" | "sync" | "managed" | "session"
 

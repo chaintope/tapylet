@@ -5,7 +5,7 @@ import { validateAddress } from "../../lib/wallet"
 import { createAndSignTransaction, createAndSignAssetTransaction } from "../../lib/wallet/transaction"
 import { parseTpc, formatTpc, formatTokenAmount, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails, type Metadata } from "../../lib/api"
 import { walletStorage } from "../../lib/storage/secureStore"
-import { isValidAmount, parseAndValidateAmount, MAX_AMOUNT, MAX_COLORED_AMOUNT } from "../../lib/utils/validation"
+import { isValidAmount, parseAndValidateAmount, MAX_AMOUNT, MAX_COLORED_AMOUNT } from "~/core/utils/validation"
 
 interface SendModalProps {
   address: string

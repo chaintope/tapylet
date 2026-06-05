@@ -1,4 +1,4 @@
-import type { KeyValueStore } from "./types"
+import type { KeyValueStore } from "~/core/storage/types"
 import { PlasmoKeyValueStore } from "./adapters/plasmo"
 
 export interface IssuedToken {

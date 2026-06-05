@@ -4,7 +4,7 @@ import { walletStorage } from "./lib/storage/secureStore"
 import { settingsStore, DEFAULT_AUTO_LOCK_MINUTES } from "./lib/storage/settingsStore"
 import { useAutoLock } from "./lib/hooks/useAutoLock"
 import { WelcomeScreen, CreateWalletScreen, MnemonicDisplayScreen, MnemonicConfirmScreen, PasswordSetupScreen, RestoreWalletScreen, UnlockScreen, MainWalletScreen, SettingsScreen } from "./screens"
-import type { AppScreen } from "./types/wallet"
+import type { AppScreen } from "~/extension/types/navigation"
 import "./lib/i18n"
 import "./styles/globals.css"
 

@@ -6,8 +6,8 @@ import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
 import { issuedTokenStore } from "../lib/storage/issuedTokenStore"
 import { getAllBalances, formatTpc, formatTokenAmount, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "../lib/api"
-import { sanitizeImageUrl } from "../lib/utils/sanitize"
-import type { AppScreen } from "../types/wallet"
+import { sanitizeImageUrl } from "~/core/utils/sanitize"
+import type { AppScreen } from "~/extension/types/navigation"
 
 interface MainWalletScreenProps {
   address: string

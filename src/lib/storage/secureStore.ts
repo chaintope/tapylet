@@ -1,5 +1,5 @@
-import type { WalletData } from "../../types/wallet"
-import type { KeyValueStore, SecureKeyValueStore } from "./types"
+import type { WalletData } from "~/core/types/wallet"
+import type { KeyValueStore, SecureKeyValueStore } from "~/core/storage/types"
 import { PlasmoKeyValueStore, PlasmoSecureStore } from "./adapters/plasmo"
 
 const STORAGE_KEYS = {

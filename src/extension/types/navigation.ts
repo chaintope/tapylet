@@ -1,15 +1,4 @@
-export interface WalletData {
-  encryptedMnemonic: string
-  address: string
-  publicKey: string
-  createdAt: number
-}
-
-export interface WalletState {
-  address: string | null
-  isLocked: boolean
-  walletExists: boolean
-}
+// UI navigation types — specific to the extension's screen flow.
 
 export type AppScreen =
   | "loading"

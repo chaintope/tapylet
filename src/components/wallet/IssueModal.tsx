@@ -5,7 +5,7 @@ import { issueToken, type TokenType, type MetadataFields } from "../../lib/walle
 import { issuedTokenStore } from "../../lib/storage/issuedTokenStore"
 import { walletStorage } from "../../lib/storage/secureStore"
 import { formatColorId } from "../../lib/api"
-import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "../../lib/utils/validation"
+import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "~/core/utils/validation"
 
 interface IssueModalProps {
   address: string
