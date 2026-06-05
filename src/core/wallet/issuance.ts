@@ -1,7 +1,7 @@
 import * as tapyrus from "tapyrusjs-lib"
 import { Metadata } from "tapyrusjs-lib"
 import * as ecc from "tiny-secp256k1"
-import { getAddressUtxos, broadcastTransaction, isTpcColorId, type Utxo } from "../api/esplora"
+import { getAddressUtxos, broadcastTransaction, isTpcColorId, type Utxo } from "~/core/api/esplora"
 import { getKeyPairFromMnemonic } from "./hdwallet"
 import { DUST_THRESHOLD, DEFAULT_FEE_RATE } from "~/core/constants/transaction"
 

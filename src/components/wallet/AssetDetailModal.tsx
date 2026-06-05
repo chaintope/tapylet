@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
-import { formatColorId, formatTokenAmount, getExplorerColorUrl } from "../../lib/api"
+import { formatColorId, formatTokenAmount, getExplorerColorUrl } from "~/core/api"
 import { issuedTokenStore, type IssuedToken } from "../../lib/storage/issuedTokenStore"
 import { sanitizeUrl, sanitizeImageUrl } from "~/core/utils/sanitize"
-import { burnAsset } from "../../lib/wallet/transaction"
+import { burnAsset } from "~/core/wallet/transaction"
 import { walletStorage } from "../../lib/storage/secureStore"
 import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "~/core/utils/validation"
-import type { AssetBalance, Metadata } from "../../lib/api"
+import type { AssetBalance, Metadata } from "~/core/api"
 
 const TOKEN_REGISTRY_URL = "https://github.com/chaintope/tapyrus-token-registry/issues/new?template=register-token.yml"
 

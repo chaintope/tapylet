@@ -1,12 +1,12 @@
-import { createAndSignTransaction, createAndSignAssetTransaction, burnAsset } from '../../../src/lib/wallet/transaction'
+import { createAndSignTransaction, createAndSignAssetTransaction, burnAsset } from '~/core/wallet/transaction'
 import * as tapyrus from 'tapyrusjs-lib'
-import * as esplora from '../../../src/lib/api/esplora'
-import * as hdwallet from '../../../src/lib/wallet/hdwallet'
+import * as esplora from '~/core/api/esplora'
+import * as hdwallet from '~/core/wallet/hdwallet'
 import { TEST_MNEMONIC, TEST_ADDRESS, TEST_RECIPIENT, mockKeyPairWithNetwork } from '../../helpers/mockWallet'
 
 // Mock the modules
-jest.mock('../../../src/lib/api/esplora')
-jest.mock('../../../src/lib/wallet/hdwallet')
+jest.mock('~/core/api/esplora')
+jest.mock('~/core/wallet/hdwallet')
 
 const mockedEsplora = esplora as jest.Mocked<typeof esplora>
 const mockedHdwallet = hdwallet as jest.Mocked<typeof hdwallet>

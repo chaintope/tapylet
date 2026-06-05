@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { shortenAddress } from "../../lib/wallet"
+import { shortenAddress } from "~/core/wallet"
 
 interface AddressDisplayProps {
   address: string

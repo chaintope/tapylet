@@ -1,5 +1,5 @@
-import { generateAddress, validateAddress, shortenAddress } from '../../../src/lib/wallet/address'
-import { createHDWallet } from '../../../src/lib/wallet/hdwallet'
+import { generateAddress, validateAddress, shortenAddress } from '~/core/wallet/address'
+import { createHDWallet } from '~/core/wallet/hdwallet'
 import { TEST_MNEMONIC } from '../../helpers/mockWallet'
 
 describe('address', () => {

@@ -1,5 +1,5 @@
 import * as tapyrus from 'tapyrusjs-lib'
-import type { KeyPairWithNetwork } from '../../src/lib/wallet/hdwallet'
+import type { KeyPairWithNetwork } from '~/core/wallet/hdwallet'
 
 // Common test mnemonic (BIP39 test vector)
 export const TEST_MNEMONIC = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'

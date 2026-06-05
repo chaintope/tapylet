@@ -1,11 +1,11 @@
-import { issueToken, type TokenType, type MetadataFields } from '../../../src/lib/wallet/issuance'
-import * as esplora from '../../../src/lib/api/esplora'
-import * as hdwallet from '../../../src/lib/wallet/hdwallet'
+import { issueToken, type TokenType, type MetadataFields } from '~/core/wallet/issuance'
+import * as esplora from '~/core/api/esplora'
+import * as hdwallet from '~/core/wallet/hdwallet'
 import { TEST_MNEMONIC, TEST_ADDRESS, mockPublicKey, mockKeyPairWithNetwork } from '../../helpers/mockWallet'
 
 // Mock the modules
-jest.mock('../../../src/lib/api/esplora')
-jest.mock('../../../src/lib/wallet/hdwallet')
+jest.mock('~/core/api/esplora')
+jest.mock('~/core/wallet/hdwallet')
 
 const mockedEsplora = esplora as jest.Mocked<typeof esplora>
 const mockedHdwallet = hdwallet as jest.Mocked<typeof hdwallet>

@@ -1,10 +1,10 @@
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
-import { issueToken, type TokenType, type MetadataFields } from "../../lib/wallet/issuance"
+import { issueToken, type TokenType, type MetadataFields } from "~/core/wallet/issuance"
 import { issuedTokenStore } from "../../lib/storage/issuedTokenStore"
 import { walletStorage } from "../../lib/storage/secureStore"
-import { formatColorId } from "../../lib/api"
+import { formatColorId } from "~/core/api"
 import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "~/core/utils/validation"
 
 interface IssueModalProps {

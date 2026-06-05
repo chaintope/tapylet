@@ -5,7 +5,7 @@ import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions, AssetDeta
 import { walletStorage } from "../lib/storage/secureStore"
 import { pendingTxStore, type PendingTransaction } from "../lib/storage/pendingTxStore"
 import { issuedTokenStore } from "../lib/storage/issuedTokenStore"
-import { getAllBalances, formatTpc, formatTokenAmount, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "../lib/api"
+import { getAllBalances, formatTpc, formatTokenAmount, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "~/core/api"
 import { sanitizeImageUrl } from "~/core/utils/sanitize"
 import type { AppScreen } from "~/extension/types/navigation"
 

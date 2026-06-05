@@ -1,7 +1,7 @@
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../components/ui"
-import { createHDWallet, generateAddress } from "../lib/wallet"
+import { createHDWallet, generateAddress } from "~/core/wallet"
 import { walletStorage } from "../lib/storage/secureStore"
 import type { AppScreen } from "~/extension/types/navigation"
 import type { WalletData } from "~/core/types/wallet"

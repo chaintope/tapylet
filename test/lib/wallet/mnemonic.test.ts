@@ -5,7 +5,7 @@ import {
   normalizeMnemonic,
   mnemonicToWords,
   wordsToMnemonic,
-} from '../../../src/lib/wallet/mnemonic'
+} from '~/core/wallet/mnemonic'
 
 describe('mnemonic', () => {
   const validMnemonic = 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about'

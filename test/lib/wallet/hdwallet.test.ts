@@ -1,4 +1,4 @@
-import { createHDWallet, getPublicKeyFromWIF, NetworkId } from '../../../src/lib/wallet/hdwallet'
+import { createHDWallet, getPublicKeyFromWIF, NetworkId } from '~/core/wallet/hdwallet'
 import { TEST_MNEMONIC } from '../../helpers/mockWallet'
 
 describe('hdwallet', () => {
