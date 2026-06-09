@@ -4,11 +4,10 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],
   testMatch: ['**/*.test.ts'],
+  // Core logic is tested in @chaintope/tapylet-core. Extension-specific tests
+  // (if added) go under test/ and resolve ~ to src.
+  passWithNoTests: true,
   moduleNameMapper: {
-    '^tiny-secp256k1$': '<rootDir>/src/lib/secp256k1-compat.js',
-    // @plasmohq/storage is ESM-only; tests inject in-memory stores instead.
-    '^@plasmohq/storage/secure$': '<rootDir>/test/helpers/plasmoStub.ts',
-    '^@plasmohq/storage$': '<rootDir>/test/helpers/plasmoStub.ts',
     '^~/(.*)$': '<rootDir>/src/$1',
   },
   transform: {

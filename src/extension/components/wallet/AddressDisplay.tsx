@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { shortenAddress } from "~/core/wallet"
+import { shortenAddress } from "@chaintope/tapylet-core/wallet"
 
 interface AddressDisplayProps {
   address: string

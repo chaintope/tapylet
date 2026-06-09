@@ -5,7 +5,7 @@
 
 import { Storage } from "@plasmohq/storage"
 import { SecureStorage } from "@plasmohq/storage/secure"
-import type { KeyValueStore, SecureKeyValueStore } from "~/core/storage/types"
+import type { KeyValueStore, SecureKeyValueStore } from "@chaintope/tapylet-core/storage/types"
 
 type StorageArea = "local" | "sync" | "managed" | "session"
 

@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "../components/ui"
 import { MnemonicGrid } from "../components/wallet"
-import { mnemonicToWords } from "~/core/wallet"
+import { mnemonicToWords } from "@chaintope/tapylet-core/wallet"
 import type { AppScreen } from "~/extension/types/navigation"
 
 interface MnemonicDisplayScreenProps {
