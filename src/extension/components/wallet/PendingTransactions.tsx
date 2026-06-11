@@ -1,7 +1,7 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 import type { PendingTransaction } from "~/extension/storage"
-import { formatTpc, formatTokenAmount, getExplorerTxUrl, formatColorId, getExplorerColorUrl, type Metadata } from "@chaintope/tapylet-core/api"
+import { formatTpc, formatTokenAmount, getExplorerTxUrl, formatColorId, getExplorerColorUrl, type Metadata } from "@tapylet/core/api"
 
 interface PendingTransactionsProps {
   transactions: PendingTransaction[]

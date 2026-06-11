@@ -11,12 +11,12 @@ importers:
 
   .:
     dependencies:
-      '@chaintope/tapylet-core':
-        specifier: link:../tapylet-core
-        version: link:../tapylet-core
       '@plasmohq/storage':
         specifier: ^1.15.0
         version: 1.15.0(react@18.2.0)
+      '@tapylet/core':
+        specifier: link:../tapylet-core
+        version: link:../tapylet-core
       i18next:
         specifier: ^25.8.13
         version: 25.8.13(typescript@5.3.3)

@@ -5,8 +5,8 @@ import { AddressDisplay, ReceiveModal, SendModal, PendingTransactions, AssetDeta
 import { walletStorage } from "~/extension/storage"
 import { pendingTxStore, type PendingTransaction } from "~/extension/storage"
 import { issuedTokenStore } from "~/extension/storage"
-import { getAllBalances, formatTpc, formatTokenAmount, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "@chaintope/tapylet-core/api"
-import { sanitizeImageUrl } from "@chaintope/tapylet-core/utils/sanitize"
+import { getAllBalances, formatTpc, formatTokenAmount, getTransactionInfo, formatColorId, getExplorerColorUrl, getTokenMetadataBatch, Metadata, type AllBalances } from "@tapylet/core/api"
+import { sanitizeImageUrl } from "@tapylet/core/utils/sanitize"
 import type { AppScreen } from "~/extension/types/navigation"
 
 interface MainWalletScreenProps {

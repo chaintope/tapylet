@@ -1,10 +1,10 @@
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../components/ui"
-import { createHDWallet, generateAddress } from "@chaintope/tapylet-core/wallet"
+import { createHDWallet, generateAddress } from "@tapylet/core/wallet"
 import { walletStorage } from "~/extension/storage"
 import type { AppScreen } from "~/extension/types/navigation"
-import type { WalletData } from "@chaintope/tapylet-core/types/wallet"
+import type { WalletData } from "@tapylet/core/types/wallet"
 
 interface PasswordSetupScreenProps {
   mnemonic: string

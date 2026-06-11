@@ -15,10 +15,10 @@
   "alias": {
     "fs": false,
     "path": false,
-    "tiny-secp256k1": "./node_modules/@chaintope/tapylet-core/dist/lib/secp256k1-compat.js"
+    "tiny-secp256k1": "./node_modules/@tapylet/core/dist/lib/secp256k1-compat.js"
   },
   "dependencies": {
-    "@chaintope/tapylet-core": "link:../tapylet-core",
+    "@tapylet/core": "link:../tapylet-core",
     "@plasmohq/storage": "^1.15.0",
     "i18next": "^25.8.13",
     "i18next-browser-languagedetector": "^8.2.1",

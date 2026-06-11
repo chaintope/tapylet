@@ -1,11 +1,11 @@
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
-import { validateAddress } from "@chaintope/tapylet-core/wallet"
-import { createAndSignTransaction, createAndSignAssetTransaction } from "@chaintope/tapylet-core/wallet/transaction"
-import { parseTpc, formatTpc, formatTokenAmount, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails, type Metadata } from "@chaintope/tapylet-core/api"
+import { validateAddress } from "@tapylet/core/wallet"
+import { createAndSignTransaction, createAndSignAssetTransaction } from "@tapylet/core/wallet/transaction"
+import { parseTpc, formatTpc, formatTokenAmount, formatColorId, getExplorerColorUrl, TPC_COLOR_ID, type AssetBalance, type BalanceDetails, type Metadata } from "@tapylet/core/api"
 import { walletStorage } from "~/extension/storage"
-import { isValidAmount, parseAndValidateAmount, MAX_AMOUNT, MAX_COLORED_AMOUNT } from "@chaintope/tapylet-core/utils/validation"
+import { isValidAmount, parseAndValidateAmount, MAX_AMOUNT, MAX_COLORED_AMOUNT } from "@tapylet/core/utils/validation"
 
 interface SendModalProps {
   address: string

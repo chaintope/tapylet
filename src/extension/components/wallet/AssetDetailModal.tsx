@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
-import { formatColorId, formatTokenAmount, getExplorerColorUrl } from "@chaintope/tapylet-core/api"
+import { formatColorId, formatTokenAmount, getExplorerColorUrl } from "@tapylet/core/api"
 import { issuedTokenStore, type IssuedToken } from "~/extension/storage"
-import { sanitizeUrl, sanitizeImageUrl } from "@chaintope/tapylet-core/utils/sanitize"
-import { burnAsset } from "@chaintope/tapylet-core/wallet/transaction"
+import { sanitizeUrl, sanitizeImageUrl } from "@tapylet/core/utils/sanitize"
+import { burnAsset } from "@tapylet/core/wallet/transaction"
 import { walletStorage } from "~/extension/storage"
-import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "@chaintope/tapylet-core/utils/validation"
-import type { AssetBalance, Metadata } from "@chaintope/tapylet-core/api"
+import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "@tapylet/core/utils/validation"
+import type { AssetBalance, Metadata } from "@tapylet/core/api"
 
 const TOKEN_REGISTRY_URL = "https://github.com/chaintope/tapyrus-token-registry/issues/new?template=register-token.yml"
 

@@ -1,11 +1,11 @@
 import React, { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button, Input } from "../ui"
-import { issueToken, type TokenType, type MetadataFields } from "@chaintope/tapylet-core/wallet/issuance"
+import { issueToken, type TokenType, type MetadataFields } from "@tapylet/core/wallet/issuance"
 import { issuedTokenStore } from "~/extension/storage"
 import { walletStorage } from "~/extension/storage"
-import { formatColorId } from "@chaintope/tapylet-core/api"
-import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "@chaintope/tapylet-core/utils/validation"
+import { formatColorId } from "@tapylet/core/api"
+import { parseAndValidateAmount, MAX_COLORED_AMOUNT } from "@tapylet/core/utils/validation"
 
 interface IssueModalProps {
   address: string
