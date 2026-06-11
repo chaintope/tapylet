@@ -130,7 +130,7 @@ export const SendModal: React.FC<SendModalProps> = ({
           fromAddress: address,
           toAddress: toAddress.trim(),
           amount: sendAmount,
-          mnemonic: walletData.encryptedMnemonic,
+          mnemonic: walletData.mnemonic,
         })
       } else {
         sendAmount = parseAndValidateAmount(amount, MAX_COLORED_AMOUNT, selectedDecimals)!
@@ -139,7 +139,7 @@ export const SendModal: React.FC<SendModalProps> = ({
           toAddress: toAddress.trim(),
           amount: sendAmount,
           colorId: selectedColorId,
-          mnemonic: walletData.encryptedMnemonic,
+          mnemonic: walletData.mnemonic,
         })
       }
 

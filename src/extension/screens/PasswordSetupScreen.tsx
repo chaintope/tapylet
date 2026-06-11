@@ -48,7 +48,7 @@ export const PasswordSetupScreen: React.FC<PasswordSetupScreenProps> = ({
       await walletStorage.setPassword(password)
 
       const walletData: WalletData = {
-        encryptedMnemonic: mnemonic, // SecureStorage will encrypt this
+        mnemonic, // plaintext here; encrypted at rest by SecureStorage
         address,
         publicKey: Buffer.from(keys.publicKey).toString("hex"),
         createdAt: Date.now(),

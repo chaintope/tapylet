@@ -15,8 +15,8 @@ importers:
         specifier: ^1.15.0
         version: 1.15.0(react@18.2.0)
       '@tapylet/core':
-        specifier: ^0.0.1
-        version: 0.0.1(typescript@5.3.3)
+        specifier: ^0.0.2
+        version: 0.0.2(typescript@5.3.3)
       i18next:
         specifier: ^25.8.13
         version: 25.8.13(typescript@5.3.3)
@@ -2196,8 +2196,8 @@ packages:
     resolution: {integrity: sha512-+PmQX0PiAYPMeVYe237LJAYvOMYW1j2rH5YROyS3b4CTVJum34HfRvKvAzozHAQG0TnHNdUfY9nCeUyRAs//cw==}
     engines: {node: '>=14.16'}
 
-  '@tapylet/core@0.0.1':
-    resolution: {integrity: sha512-7cwlxsq8+Y5hFZ7tAubhxmu/o3nQKf7iKZeGTIqCD6rS9UWZZTPyWUFbrGV3EcmNA2I71tt9DByhB4tEnoxBiQ==}
+  '@tapylet/core@0.0.2':
+    resolution: {integrity: sha512-cfSyCOUiDoa+P25KxjuMoyp/jF3VrPP9o9hTfIZ1uFa5b4M3Q1sZ/rS7C+GOntlcBwdBEBoCB/9rI9GDhhA/Qw==}
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -7458,7 +7458,7 @@ snapshots:
     dependencies:
       defer-to-connect: 2.0.1
 
-  '@tapylet/core@0.0.1(typescript@5.3.3)':
+  '@tapylet/core@0.0.2(typescript@5.3.3)':
     dependencies:
       '@noble/hashes': 2.2.0
       '@noble/secp256k1': 2.3.0

@@ -141,7 +141,7 @@ export const AssetDetailModal: React.FC<AssetDetailModalProps> = ({
         fromAddress: address,
         amount: parsedAmount,
         colorId,
-        mnemonic: walletData.encryptedMnemonic,
+        mnemonic: walletData.mnemonic,
       })
 
       setBurnTxid(result.txid)

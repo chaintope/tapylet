@@ -185,7 +185,7 @@ export const IssueModal: React.FC<IssueModalProps> = ({
         tokenType,
         amount: parsedAmount,
         metadata,
-        mnemonic: walletData.encryptedMnemonic,
+        mnemonic: walletData.mnemonic,
         fromAddress: address,
       })
 
