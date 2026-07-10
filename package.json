@@ -29,7 +29,7 @@
     "react-i18next": "^16.5.4"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
+    "@babel/core": "^7.29.6",
     "@babel/preset-env": "^7.29.0",
     "@plasmohq/parcel-resolver": "^0.14.2",
     "@types/chrome": "0.0.258",
