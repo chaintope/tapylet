@@ -61,10 +61,5 @@
   },
   "overrides": {
     "get-intrinsic": "1.2.4"
-  },
-  "pnpm": {
-    "overrides": {
-      "get-intrinsic": "1.2.4"
-    }
   }
 }
