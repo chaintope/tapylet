@@ -10,7 +10,8 @@ interface SettingsScreenProps {
   onNavigate: (screen: AppScreen) => void
 }
 
-const APP_VERSION = "0.0.1"
+// package.jsonのversionがmanifestに反映されるため、そこから取得して二重管理を避ける
+const APP_VERSION = chrome.runtime.getManifest().version
 
 export const SettingsScreen: React.FC<SettingsScreenProps> = ({
   onNavigate,

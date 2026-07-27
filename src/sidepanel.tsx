@@ -1,3 +1,10 @@
+// Injects the network into @tapylet/core. Must stay above every import that
+// reaches core: ES modules evaluate dependencies in import order, so anything
+// listed earlier runs its module body first and would observe an unconfigured
+// core. Today core is only touched at render time, which is well after this
+// runs either way — the position is what keeps that from being load-bearing.
+import "~/extension/constants/network"
+
 import { useCallback, useEffect, useState } from "react"
 import { Loading } from "~/extension/components/ui"
 import { walletStorage } from "~/extension/storage"

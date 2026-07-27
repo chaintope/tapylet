@@ -1,6 +1,8 @@
 import React from "react"
 import { useTranslation } from "react-i18next"
 import { QRCodeSVG } from "qrcode.react"
+import { buildAddressUri } from "@tapylet/core/utils/uri"
+import { NETWORK_ID } from "~/extension/constants/network"
 import { AddressDisplay } from "./AddressDisplay"
 import { Button } from "../ui"
 
@@ -41,8 +43,11 @@ export const ReceiveModal: React.FC<ReceiveModalProps> = ({ address, isOpen, onC
         {/* QR Code */}
         <div className="flex justify-center mb-6">
           <div className="p-4 bg-white border border-slate-200 rounded-xl">
+            {/* QR carries a TIP-0021 URI so scanners can tell which network
+                the address belongs to; the address below stays raw so it
+                remains copy-pastable. */}
             <QRCodeSVG
-              value={address}
+              value={buildAddressUri(address, NETWORK_ID)}
               size={180}
               level="M"
               includeMargin={false}

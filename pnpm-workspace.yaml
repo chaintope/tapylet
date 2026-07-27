@@ -1,0 +1,17 @@
+overrides:
+  get-intrinsic: 1.2.4
+
+# 自前で公開しているパッケージなので、新規公開直後でもインストールを許可する
+minimumReleaseAgeExclude:
+  - '@tapylet/core'
+
+# Plasmo/Parcel のビルドツールチェインが必要とするネイティブビルドを許可する
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  esbuild: true
+  less: true
+  lmdb: true
+  msgpackr-extract: true
+  sharp: true
+  unrs-resolver: true
